@@ -6,7 +6,7 @@
   --font-domine: "Domine", serif;
   --font-montserrat: "Montserrat", sans-serif;
 
-  /* Colors */
+  /* Gray Colors */
   --color-gray-1: #fff;
   --color-gray-2: #e0e0e0;
   --color-gray-3: #c8c8c8;
@@ -16,6 +16,9 @@
   --color-gray-7: #444444;
   --color-gray-8: #2a2a2a;
   --color-gray-9: #141414;
+
+  /* BG Colors */
+  --color-bg-1: #F7F0E7;
 }
 
  /* Color Gradients SplashScreen */
@@ -23,4 +26,47 @@
     .bg-splash {
     background: linear-gradient(to top, #141414, #6B6B6B);
     }
+     .bg-app {
+       background-color: var(--color-bg-1);
+     }
+    /* Design system buttons */
+    .btn {
+      @apply inline-flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-colors duration-200;
+    }
+
+    .btn-primary {
+      @apply text-gray-9;
+      background: linear-gradient(90deg, #FEC960 0%, #E7962B 100%);
+      box-shadow: 0 4px 0 rgba(146, 77, 3, 0.45);
+      border-radius: 12px;
+      color: #141414;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(90deg, #fed976 0%, #f7b71c 100%);
+    }
+
+    .btn-primary:focus {
+      outline: 2px solid rgba(245, 158, 11, 0.35);
+      outline-offset: 3px;
+    }
+
+    .btn-secondary {
+      @apply inline-flex items-center gap-1 rounded-xl px-3 py-2 font-semibold transition duration-200;
+      background-color: #ffffff;
+      color: #444444;
+      border: 1.5px solid #e0e0e0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .btn-secondary:hover {
+      background-color: #f7f7f7;
+    }
+
+    .btn-secondary:focus {
+      outline: 2px solid rgba(17, 24, 39, 0.18);
+      outline-offset: 2px;
+    }
   }
+

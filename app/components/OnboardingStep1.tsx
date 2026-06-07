@@ -12,10 +12,10 @@ export default function OnboardingStep1() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center">
+    <div className="min-h-screen flex flex-col bg-app">
       <div className="text-center">
         <Image 
-          src="/img/01_bg_florest.png" 
+          src="/img/daviFront.png" 
           alt="Floresta - Onboarding" 
           width={400}
           height={520}
@@ -23,35 +23,19 @@ export default function OnboardingStep1() {
           className="mx-auto mb-8 rounded-lg"
         />
 
-       
-
         <div className="space-y-3 mb-8 text-center px-6">
-             <h1 className="text-3xl font-domine font-bold text-gray-9 mb-4">Memorize os Salmos</h1>
+          <h1 className="text-3xl font-domine font-bold text-gray-9 mb-4">Memorize os Salmos</h1>
         
-            <p className="text-lg text-center text-gray-6 mb-6">
-            Uma jornada diária de oração, contemplação e constância
+            <p className="text-lg text-center text-gray-6 mb-10">
+            Entre em uma jornada diária com o <strong>Rei Davi</strong> e eleve sua vida espiritual tendo mais intimide com a palavra de Deus!
             </p>
-
-          <div className="flex items-start">
-            <span className="text-green-600 font-bold mr-3">✓</span>
-            <p className="text-gray-7">Aprenda um Salmo por dia</p>
-          </div>
-          <div className="flex items-start">
-            <span className="text-green-600 font-bold mr-3">✓</span>
-            <p className="text-gray-7">Exercícios interativos</p>
-          </div>
-          <div className="flex items-start">
-            <span className="text-gray-600 font-bold mr-3">✓</span>
-            <p className="text-gray-7">Acompanhe seu progresso</p>
-          </div>
-        
-
-          <button
+  
+            <button
             onClick={handleContinue}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 ease-in-out"
-          >
+            className="btn btn-primary w-full"
+            >
             Continuar
-          </button>
+            </button>
         </div>
 
         
