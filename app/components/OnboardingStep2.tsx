@@ -3,7 +3,7 @@
 import HeaderBackButton from './HeaderBackButton';
 import Image from 'next/image';
 import { useOnboarding } from '../context/OnboardingContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
  
@@ -19,18 +19,20 @@ type WordOption = {
   selected: boolean;
 };
 
-// Full phrase: "Os dois caminhos do Homem"
+// Full phrase: "Salmo 1: Os dois caminhos do Homem"
 // Blanks: positions for "do" and "Homem"
 const PHRASE_SLOTS: WordSlot[] = [
-  { id: 1, word: "Os",       isBlank: false },
-  { id: 2, word: "dois",     isBlank: false },
-  { id: 3, word: "caminhos", isBlank: false },
-  { id: 4, word: "do",       isBlank: true  },
-  { id: 5, word: "Homem",    isBlank: true  },
+  { id: 1, word: "Salmo",    isBlank: false },
+  { id: 2, word: "1:",       isBlank: false },
+  { id: 3, word: "Os",       isBlank: false },
+  { id: 4, word: "dois",     isBlank: false },
+  { id: 5, word: "caminhos", isBlank: false },
+  { id: 6, word: "do",       isBlank: true  },
+  { id: 7, word: "Homem",    isBlank: true  },
 ];
  
 const INITIAL_OPTIONS: WordOption[] = [
-  { id: 1, word: "da",     selected: false },
+  { id: 1, word: "dos",    selected: false },
   { id: 2, word: "do",     selected: false },
   { id: 3, word: "menino", selected: false },
   { id: 4, word: "Homem",  selected: false },
@@ -38,73 +40,7 @@ const INITIAL_OPTIONS: WordOption[] = [
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
  
-function DavidSpeechBubble({ visible }: { visible: boolean }) {
-  return (
-    <div
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(8px)",
-        transition: "opacity 0.5s ease, transform 0.5s ease",
-        transitionDelay: visible ? "0.6s" : "0s",
-      }}
-      className="absolute -bottom-4.5 -right-20 z-10"
-    >
-      <div
-        className="relative bg-white rounded-2xl px-5 py-4 shadow-lg"
-        style={{ minWidth: 220, maxWidth: 260 }}
-      >
-        {/* Tail pointing left toward David */}
-        <div
-          className="absolute -left-2.5 top-5"
-          style={{
-            width: 0,
-            height: 0,
-            borderTop: "8px solid transparent",
-            borderBottom: "8px solid transparent",
-            borderRight: "12px solid white",
-          }}
-        />
 
-                {/* Audio indicator */}
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex items-center gap-1">
-            <span style={{ fontSize: 18 }}>🔊</span>
-            <span
-              className="text-xs font-medium"
-              style={{ color: "#6B6B6B", fontFamily: "var(--font-montserrat)" }}
-            >
-              Escute a frase novamente
-            </span>
-          </div>
-        </div>
-         {/* Phrase with blanks shown */}
-        <p
-          className="font-bold leading-snug"
-          style={{
-            fontFamily: "var(--font-domine)",
-            fontSize: 17,
-            color: "#141414",
-            letterSpacing: "-0.01em",
-          }}
-        >
-          Os dois caminhos
-        </p>
- 
-        {/* Two blank lines */}
-        <div className="mt-2 space-y-1">
-          <div
-            className="h-0.5 rounded-full"
-            style={{ background: "#c8c8c8", width: "80%" }}
-          />
-          <div
-            className="h-0.5 rounded-full"
-            style={{ background: "#c8c8c8", width: "55%" }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
 function PhraseField({ slots, answers }: { slots: WordSlot[]; answers: (string | null)[] }) {
   // answers[0] → first blank, answers[1] → second blank
   let blankIndex = 0;
@@ -150,7 +86,304 @@ function PhraseField({ slots, answers }: { slots: WordSlot[]; answers: (string |
     </div>
   );
 }
- 
+
+function DavidSpeechBubble({
+  visible,
+  audioRef,
+  onPlay,
+}: {
+  visible: boolean;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+  onPlay: () => void;
+}) {
+  return (
+    <div
+      style={{
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(12px)",
+        transition: "opacity 0.5s ease, transform 0.5s ease",
+        transitionDelay: visible ? "0.6s" : "0s",
+      }}
+      className="absolute -bottom-4.5 -right-20 z-10"
+    >
+      <button
+        type="button"
+        onClick={onPlay}
+        className="relative bg-white rounded-2xl px-4 py-2 shadow-lg flex items-center gap-1"
+      >
+        <span style={{ fontSize: 18 }}>🔊</span>
+        <span
+          className="text-xs font-medium"
+          style={{ color: "#6B6B6B", fontFamily: "var(--font-montserrat)" }}
+        >
+          Escutar novamente
+        </span>
+      </button>
+      <audio ref={audioRef} src="/audio/salmo1Title.mpeg" preload="auto" />
+    </div>
+  );
+}
+
+function SuccessModal({
+  visible,
+  onContinue,
+}: {
+  visible: boolean;
+  onContinue: () => void;
+}) {
+  if (!visible) return null;
+
+  return (  
+    <div className= "w-full px-6 pt-4"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        backgroundColor: "#CBFFB8",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 50,
+      }}
+    >
+      <h2
+        className="text-align-left w-full mb-4"
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#141414",
+          fontFamily: "var(--font-domine)",
+          
+        }}
+      >
+        Correto!
+      </h2>
+      <button
+        onClick={onContinue}
+        className="btn btn-success w-full mb-16"
+        style={{
+          fontSize: 18,
+          fontWeight: 700,
+          paddingLeft: 40,
+          paddingRight: 40,
+          paddingTop: 16,
+          paddingBottom: 16,
+          borderRadius: 16,
+        }}
+      >
+        Continuar
+      </button>
+    </div>
+  );
+}
+
+function RewardModal({
+  visible,
+  onClose,
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const [showDavi, setShowDavi] = useState(false);
+
+  useEffect(() => {
+    if (!visible) return;
+    setShowDavi(false);
+    const timer = setTimeout(() => setShowDavi(true), 250);
+    return () => clearTimeout(timer);
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(2,2,2,0.6)",
+        backdropFilter: "blur(6px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+
+        transition: "opacity 0.3s ease",
+        
+        zIndex: 60,
+      }}
+    >
+      <div
+        className="bg-app pt-10"
+        style={{
+          
+          width: "100%",
+          maxWidth: 380,
+          borderRadius: 16,
+          height: 320,
+          padding: 32,
+          boxShadow: "0 24px 72px rgba(0,0,0,0.18)",
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(16px)",
+          transition: "opacity 0.5s ease, transform 0.7s ease",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: -180,
+            left: 0,
+            right: 0,
+            opacity: showDavi ? 1 : 0,
+            transform: showDavi ? "translateY(0)" : "translateY(16px)",
+            transition: "opacity 0.35s ease 0.2s, transform 0.35s ease 0.s",
+            display: "flex",
+            justifyContent: "center",
+            
+          }}
+        >
+          <Image
+            src="/img/daviCelebrateModal.png"
+            alt="Davi"
+            width={205}
+            height={218}
+          />
+        </div>
+
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+             
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+              
+            }}
+          >
+
+            <span
+              style={{
+                fontSize: 32,
+                fontWeight: 700,
+                color: "#1CB0F6",
+              }}
+            >
+              10
+            </span>
+
+            <span
+              style={{
+                fontSize: 40,
+            }}
+            >
+              💎
+            </span>
+            
+          </div>
+
+          <h3
+            style={{
+              fontFamily: "var(--font-domine)",
+              fontSize: 24,
+              fontWeight: 700,
+              color: "#141414",
+              marginBottom: 10,
+            }}
+          >
+            Você ganhou 10 cristais!
+          </h3>
+          <p
+            style={{
+              fontFamily: "var(--font-montserrat)",
+              fontSize: 14,
+              color: "#6B6B6B",
+              lineHeight: 1.6,
+              marginBottom: 24,
+            }}
+          >
+            Salve seu progresso criando uma conta com seu email google
+          </p>
+          <button
+            onClick={onClose}
+            className="btn btn-secondary w-full gap-2"
+            
+          >
+            <Image
+              src="/img/GoogleLogo.png"
+              alt="Google"
+              width={20}
+              height={20}
+            />
+            Continuar com Google
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FailureModal({
+  visible,
+  onRetry,
+}: {
+  visible: boolean;
+  onRetry: () => void;
+}) {
+  if (!visible) return null;
+
+  return (
+    <div className="w-full px-6 pt-4"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        backgroundColor: "#F8BEC4",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 50,
+      }}
+    >
+      <h2
+        className="w-full "
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#141414",
+          fontFamily: "var(--font-domine)",
+        }}
+      >
+        Algo está errado!
+      </h2>
+      <p
+        className="w-full mb-6"
+        style={{
+          fontSize: 16,
+          fontWeight: 500,
+          color: "#141414",
+          fontFamily: "var(--font-montserrat)",
+        }}
+      >
+        Verifique as palavras escolhidas
+      </p>
+      <button
+        onClick={onRetry}
+        className="btn btn-fail w-full mb-16"
+        style={{
+          fontSize: 18,
+          fontWeight: 700,
+          paddingLeft: 40,
+          paddingRight: 40,
+          paddingTop: 16,
+          paddingBottom: 16,
+          borderRadius: 16,
+        }}
+      >
+        Tente novamente
+      </button>
+    </div>
+  );
+}
+
+
 function WordChip({
   word,
   selected,
@@ -186,18 +419,32 @@ function WordChip({
 // ─── Main Screen ─────────────────────────────────────────────────────────────
  
 export default function OnboardingStep2() {
-  const { previousStep } = useOnboarding();
-  const [mounted, setMounted] = useState(false);
+  const { previousStep, nextStep } = useOnboarding();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [bubbleVisible, setBubbleVisible] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showFailure, setShowFailure] = useState(false);
+  const [showRewardModal, setShowRewardModal] = useState(false);
   const [options, setOptions] = useState<WordOption[]>(INITIAL_OPTIONS);
   const [answers, setAnswers] = useState<(string | null)[]>([null, null]);
  
   useEffect(() => {
-    setMounted(true);
     const t = setTimeout(() => setBubbleVisible(true), 400);
     return () => clearTimeout(t);
   }, []);
- 
+
+  useEffect(() => {
+    const audioTimer = setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.play().catch(() => {
+          // autoplay may be blocked until user interaction
+        });
+      }
+    }, 500);
+
+    return () => clearTimeout(audioTimer);
+  }, []);
+
   const blanks = PHRASE_SLOTS.filter((s) => s.isBlank);
   const correctWords = blanks.map((s) => s.word); // ["do", "Homem"]
  
@@ -231,15 +478,40 @@ export default function OnboardingStep2() {
  
   function handleVerify() {
     const isCorrect = answers.every((a, i) => a === correctWords[i]);
-    alert(isCorrect ? "✅ Correto! Muito bem!" : "❌ Tente novamente.");
+    if (isCorrect) {
+      setShowSuccess(true);
+    } else {
+      setShowFailure(true);
+    }
   }
  
   return (
-    <div
-      className="min-h-screen flex flex-col bg-app"
-      style={{ maxWidth: 430, margin: "0 auto" }}
-    >
-      {/* ── Header ── */}
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        onContinue={() => {
+          setShowSuccess(false);
+          setShowRewardModal(true);
+        }}
+      />
+      <RewardModal
+        visible={showRewardModal}
+        onClose={() => {
+          setShowRewardModal(false);
+          nextStep();
+        }}
+      />
+      <FailureModal
+        visible={showFailure}
+        onRetry={() => {
+          setShowFailure(false);
+        }}
+      />
+      <div
+        className="min-h-screen flex flex-col bg-app"
+        style={{ maxWidth: 430, margin: "0 auto" }}
+      >
+        {/* ── Header ── */}
       <div className="flex items-center px-5 pt-12 pb-2">
         <HeaderBackButton onClick={previousStep}>
         Voltar
@@ -282,9 +554,18 @@ export default function OnboardingStep2() {
             height={260}
           />
 
-          {/* Speech bubble 
-          <DavidSpeechBubble visible={bubbleVisible} />
-          */}
+          {/* Speech bubble */}
+          <DavidSpeechBubble
+            visible={bubbleVisible}
+            audioRef={audioRef}
+            onPlay={() => {
+              if (audioRef.current) {
+                audioRef.current.play().catch(() => {
+                  // browser may block play until interaction
+                });
+              }
+            }}
+          />
         </div>
       </div>
  
@@ -310,10 +591,10 @@ export default function OnboardingStep2() {
           className="mb-3"
           style={{
             fontFamily: "var(--font-montserrat)",
-            fontSize: 13,
-            fontWeight: 600,
+            fontSize: 16,
+            fontWeight: 400,
             color: "#6B6B6B",
-            textTransform: "uppercase",
+            
             letterSpacing: "0.06em",
           }}
         >
@@ -335,8 +616,9 @@ export default function OnboardingStep2() {
       <div className="flex-1" />
  
       {/* ── Verify Button ── */}
-      <div className="px-6 pb-10 pt-4">
+      <div className="px-6 pb-16 pt-4">
         <button
+          className={`btn ${canVerify ? 'btn-primary' : ''} w-full`}
           onClick={handleVerify}
           disabled={!canVerify}
           style={{
@@ -349,11 +631,13 @@ export default function OnboardingStep2() {
             letterSpacing: "0.02em",
             border: "none",
             cursor: canVerify ? "pointer" : "not-allowed",
-            background: canVerify
-              ? "linear-gradient(135deg, #2a2a2a 0%, #444444 100%)"
-              : "#c8c8c8",
-            color: canVerify ? "#ffffff" : "#888888",
-            boxShadow: canVerify ? "0 4px 16px rgba(0,0,0,0.18)" : "none",
+            ...(canVerify
+              ? {}
+              : {
+                  background: "#c8c8c8",
+                  color: "#888888",
+                  boxShadow: "none",
+                }),
             transition: "all 0.25s ease",
             transform: canVerify ? "scale(1)" : "scale(0.99)",
           }}
@@ -362,5 +646,6 @@ export default function OnboardingStep2() {
         </button>
       </div>
     </div>
+    </>
   );
 }
