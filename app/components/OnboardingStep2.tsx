@@ -2,8 +2,13 @@
 
 import HeaderBackButton from './HeaderBackButton';
 import Image from 'next/image';
+
 import { useOnboarding } from '../context/OnboardingContext';
 import { useState, useEffect, useRef } from 'react';
+import { createClient } from "@/lib/supabase/client";
+
+
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
  
@@ -134,7 +139,7 @@ function SuccessModal({
   if (!visible) return null;
 
   return (  
-    <div className= "w-full px-6 pt-4"
+    <div className= "w-lg px-6 pt-4"
       style={{
         position: "fixed",
         bottom: 0,
@@ -160,7 +165,7 @@ function SuccessModal({
       </h2>
       <button
         onClick={onContinue}
-        className="btn btn-success w-full mb-16"
+        className="btn btn-success mb-16"
         style={{
           fontSize: 18,
           fontWeight: 700,
@@ -179,12 +184,32 @@ function SuccessModal({
 
 function RewardModal({
   visible,
-  onClose,
+ 
+  errorMessage,
 }: {
   visible: boolean;
-  onClose: () => void;
+  onGoogleContinue: () => void;
+  loading: boolean;
+  errorMessage: string | null;
 }) {
   const [showDavi, setShowDavi] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const handleLogin = async () => {
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!visible) return;
@@ -301,19 +326,29 @@ function RewardModal({
           >
             Salve seu progresso criando uma conta com seu email google
           </p>
+
           <button
-            onClick={onClose}
-            className="btn btn-secondary w-full gap-2"
-            
-          >
-            <Image
-              src="/img/GoogleLogo.png"
-              alt="Google"
-              width={20}
-              height={20}
-            />
-            Continuar com Google
-          </button>
+                onClick={handleLogin}
+                className="btn btn-secondary w-full gap-2"
+                disabled={loading}
+                style={{ opacity: loading ? 0.75 : 1 }}
+              >
+                <Image src="/img/GoogleLogo.png" alt="Google" width={20} height={20} />
+                {loading ? "Conectando..." : "Continuar com Google"}
+              </button>
+       
+          {errorMessage ? (
+            <p
+              style={{
+                marginTop: 14,
+                fontSize: 14,
+                color: '#D64545',
+                fontFamily: 'var(--font-montserrat)',
+              }}
+            >
+              {errorMessage}
+            </p>
+          ) : null}
         </div>
       </div>
     </div>
@@ -419,12 +454,15 @@ function WordChip({
 // ─── Main Screen ─────────────────────────────────────────────────────────────
  
 export default function OnboardingStep2() {
-  const { previousStep, nextStep } = useOnboarding();
+  const { previousStep, nextStep, userProgress, completeStep } = useOnboarding();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
   const [showRewardModal, setShowRewardModal] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState<string | null>(null);
+ 
   const [options, setOptions] = useState<WordOption[]>(INITIAL_OPTIONS);
   const [answers, setAnswers] = useState<(string | null)[]>([null, null]);
  
@@ -440,7 +478,7 @@ export default function OnboardingStep2() {
           // autoplay may be blocked until user interaction
         });
       }
-    }, 500);
+    }, 200);
 
     return () => clearTimeout(audioTimer);
   }, []);
@@ -476,9 +514,13 @@ export default function OnboardingStep2() {
     setOptions(options.map((o) => (o.id === optionId ? { ...o, selected: true } : o)));
   }
  
+
+
+
   function handleVerify() {
     const isCorrect = answers.every((a, i) => a === correctWords[i]);
     if (isCorrect) {
+      completeStep(2);
       setShowSuccess(true);
     } else {
       setShowFailure(true);
@@ -494,12 +536,15 @@ export default function OnboardingStep2() {
           setShowRewardModal(true);
         }}
       />
+    
       <RewardModal
         visible={showRewardModal}
-        onClose={() => {
-          setShowRewardModal(false);
-          nextStep();
+        onGoogleContinue={() => {
+          setGoogleLoading(true);
+          setGoogleError(null);
         }}
+        loading={googleLoading}
+        errorMessage={googleError}
       />
       <FailureModal
         visible={showFailure}

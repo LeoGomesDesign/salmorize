@@ -3,7 +3,6 @@
 import { useOnboarding } from '../context/OnboardingContext';
 import OnboardingStep1 from './OnboardingStep1';
 import OnboardingStep2 from './OnboardingStep2';
-import OnboardingStep3 from './OnboardingStep3';
 import LoginForm from './LoginForm';
 import { useState } from 'react';
 
@@ -41,7 +40,6 @@ export default function OnboardingFlow() {
     <div>
       {currentStep === 1 && <OnboardingStep1 />}
       {currentStep === 2 && <OnboardingStep2 />}
-      {currentStep === 3 && <OnboardingStep3 />}
       {currentStep === 4 && (
         <LoginForm onLoginSuccess={() => setLoginCompleted(true)} />
       )}

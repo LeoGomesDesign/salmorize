@@ -8,7 +8,6 @@ interface OnboardingContextType {
   userProgress: {
     step1Completed: boolean;
     step2Completed: boolean;
-    step3Completed: boolean;
   };
   nextStep: () => void;
   previousStep: () => void;
@@ -20,11 +19,11 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 2; // Atualize conforme o número total de passos do onboarding
   const [userProgress, setUserProgress] = useState({
     step1Completed: false,
     step2Completed: false,
-    step3Completed: false,
+    
   });
 
   const nextStep = () => {
@@ -51,7 +50,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     setUserProgress({
       step1Completed: false,
       step2Completed: false,
-      step3Completed: false,
+     
     });
   };
 
