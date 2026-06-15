@@ -12,6 +12,11 @@ interface PsalmNode {
   progress: number;
 }
 
+interface SelectedPsalm {
+  psalm: PsalmNode;
+  index: number;
+}
+
 // ─── Dados (em produção viriam do Supabase) ───────────────────────────────────
 const PSALMS: PsalmNode[] = [
   { id:  1, label: "Salmo 1",  status: "completed", progress: 100 },
@@ -39,7 +44,7 @@ const X_RIGHT = AREA_WIDTH * 0.84;
 const X_LEFT  = AREA_WIDTH * 0.16;
 const getX = (index: number) => (index % 2 === 0 ? X_RIGHT : X_LEFT);
 
-// ─── Ícone livro ─────────────────────────────────────────────────────────────
+// ─── Íiro ─────────────────────────────────────────────────────────────
 function BookOpenIcon({ size, color }: { size: number; color: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -53,9 +58,10 @@ function BookOpenIcon({ size, color }: { size: number; color: string }) {
 }
 
 // ─── Degrau individual ────────────────────────────────────────────────────────
-function PsalmStep({ psalm }: { psalm: PsalmNode }) {
+function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenMModal: (psalm: PsalmNode) => void }) {
   const isActive    = psalm.status === "active";
   const isCompleted = psalm.status === "completed";
+  const isLocked = psalm.status === "locked";
 
   const size      = isActive ? STEP_SIZE_ACT : STEP_SIZE;
   const bg        = isCompleted ? "#22c55e" : isActive ? "#1D5C4A" : "#E2E0DB";
@@ -71,7 +77,12 @@ function PsalmStep({ psalm }: { psalm: PsalmNode }) {
   const ring  = size + 16;
 
   return (
-    <div style={{ position: "relative", width: ring, height: ring, display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <button
+      onClick={() => !isLocked && onOpenModal(psalm)}
+      disabled={isLocked}
+      className="cursor-pointer hover:scale-110 active:scale-95 transition-transform disabled:cursor-not-allowed"
+      style={{ position: "relative", width: ring, height: ring, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", padding: 0 }}
+    >
       {/* Arco de progresso */}
       {isActive && (
         <svg
@@ -99,6 +110,78 @@ function PsalmStep({ psalm }: { psalm: PsalmNode }) {
       }}>
         <BookOpenIcon size={size * 0.42} color={iconColor} />
       </div>
+    </button>
+  );
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+function PsalmModal({ 
+  psalm, 
+  onClose 
+}: { 
+  psalm: PsalmNode | null; 
+  onClose: () => void 
+}) {
+  if (!psalm) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", animation: "fadeIn 0.3s ease-in-out" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative rounded-3xl px-8 py-8 flex flex-col items-center gap-6 max-w-sm mx-4 shadow-2xl"
+        style={{ backgroundColor: "#2B5FA6" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Fechar modal */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-white hover:opacity-80 transition-opacity"
+          style={{ fontSize: "24px", background: "none", border: "none", cursor: "pointer" }}
+        >
+          ✕
+        </button>
+
+        {/* Ícone do livro no topo */}
+        <div
+          className="rounded-full flex items-center justify-center"
+          style={{ width: 64, height: 64, backgroundColor: "#1D5C4A" }}
+        >
+          <BookOpenIcon size={32} color="#ffffff" />
+        </div>
+
+        {/* Título */}
+        <div className="text-center">
+          <h2 className="text-white font-black text-3xl mb-2">
+            {psalm.label}
+          </h2>
+          <p className="text-blue-100 font-medium text-sm">
+            Passo 1 de 6
+          </p>
+        </div>
+
+        {/* Botão Continuar */} 
+        <button
+          onClick={onClose}
+          className="w-full rounded-2xl px-6 py-3 font-bold text-base text-stone-800 active:scale-95 transition-transform"
+          style={{ backgroundColor: "#F2EDE4" }}
+        >
+          Continuar
+        </button>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -108,11 +191,20 @@ export default function HomePage() {
   const [streak]  = useState(1);
   const [gems]    = useState(10);
   const [energy]  = useState(12);
+  const [selectedPsalm, setSelectedPsalm] = useState<PsalmNode | null>(null);
   const userName  = "Leonardo";
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const activePsalm = PSALMS.find(p => p.status === "active") ?? PSALMS[0];
   const activeIndex = PSALMS.findIndex(p => p.status === "active");
+
+  const handleOpenModal = (psalm: PsalmNode) => {
+    setSelectedPsalm(psalm);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedPsalm(null);
+  };
 
   // Altura total da área scrollável
   const totalHeight = PSALMS.length * STEP_HEIGHT + PADDING_TOP + PADDING_BOT;
@@ -232,7 +324,7 @@ export default function HomePage() {
                     zIndex: 10,
                   }}
                 >
-                  <PsalmStep psalm={psalm} />
+                  <PsalmStep psalm={psalm} onOpenModal={handleOpenModal} />
                 </div>
               );
             })}
@@ -266,6 +358,9 @@ export default function HomePage() {
           </span>
         </button>
       </div>
+
+      {/* ── Modal ──────────────────────────────────────────────────────── */}
+      <PsalmModal psalm={selectedPsalm} onClose={handleCloseModal} />
     </main>
   );
 }
