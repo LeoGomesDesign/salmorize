@@ -124,7 +124,7 @@ function DavidSpeechBubble({
           Escutar novamente
         </span>
       </button>
-      <audio ref={audioRef} src="/audio/salmo1Title.mpeg" preload="auto" />
+      <audio ref={audioRef} src="/audio/Salmo1Onboarding.mp3" preload="auto" />
     </div>
   );
 }
