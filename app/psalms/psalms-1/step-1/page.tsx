@@ -287,12 +287,12 @@ function DavidSpeechBubble({
         transition: "opacity 0.5s ease, transform 0.5s ease",
         transitionDelay: visible ? "0.6s" : "0s",
       }}
-      className="absolute -bottom-4.5 -right-20 z-1 cursor-pointer"
+      className="absolute -bottom-4.5 -right-20 z-1"
     >
       <button
         type="button"
         onClick={onPlay}
-        className="relative bg-white rounded-2xl px-4 py-2 shadow-lg flex items-center gap-1"
+        className="relative bg-white rounded-2xl px-4 py-2 shadow-lg flex items-center gap-1 cursor-pointer"
       >
         <span style={{ fontSize: 18 }}>🔊</span>
         <span
