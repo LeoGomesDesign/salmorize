@@ -384,7 +384,7 @@ try {
         onContinue={() => {
           setShowSuccess(false);
           // Se quiser mandar direto para o step-2 após o acerto:
-          router.push('/psalms/psalms-1/step-2');
+          router.push('/psalms/psalms-1/step-3');
           
           // OU se quiser abrir o modal de recompensa primeiro, como no seu exemplo:
           // setShowRewardModal(true);
