@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function StepFour() {
   const router = useRouter();
@@ -60,8 +61,124 @@ export default function StepFour() {
     }
   };
 
+  function SuccessModal({
+  visible,
+  onContinue,
+}: {
+  visible: boolean;
+  onContinue: () => void;
+}) {
+  if (!visible) return null;
+
+  return (  
+    <div className= "w-lg px-6 pt-4"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        backgroundColor: "#CBFFB8",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 50,
+      }}
+    >
+      <h2
+        className="text-align-left w-full mb-4"
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#141414",
+          fontFamily: "var(--font-domine)",
+          
+        }}
+      >
+        Correto!
+      </h2>
+      <button
+        onClick={onContinue}
+        className="btn btn-success mb-16"
+        style={{
+          fontSize: 18,
+          fontWeight: 700,
+          paddingLeft: 40,
+          paddingRight: 40,
+          paddingTop: 16,
+          paddingBottom: 16,
+          borderRadius: 16,
+        }}
+      >
+        Continuar
+      </button>
+    </div>
+  );
+}
+
+  function FailureModal({
+  visible,
+  onRetry,
+}: {
+  visible: boolean;
+  onRetry: () => void;
+}) {
+  if (!visible) return null;
+
   return (
-    <div className="h-screen overflow-hidden bg-[#FDF6EC] text-[#2D2D2D] font-sans p-4 flex flex-col justify-between max-w-md mx-auto relative border border-gray-200 shadow-lg rounded-3xl">
+    <div className="w-full px-6 pt-4"
+      style={{
+        position: "fixed",
+        bottom: 0,
+        backgroundColor: "#F8BEC4",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 50,
+      }}
+    >
+      <h2
+        className="w-full "
+        style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: "#141414",
+          fontFamily: "var(--font-domine)",
+        }}
+      >
+        Algo está errado!
+      </h2>
+      <p
+        className="w-full mb-6"
+        style={{
+          fontSize: 16,
+          fontWeight: 500,
+          color: "#141414",
+          fontFamily: "var(--font-montserrat)",
+        }}
+      >
+        Verifique as palavras escolhidas
+      </p>
+      <button
+        onClick={onRetry}
+        className="btn btn-fail w-full mb-16"
+        style={{
+          fontSize: 18,
+          fontWeight: 700,
+          paddingLeft: 40,
+          paddingRight: 40,
+          paddingTop: 16,
+          paddingBottom: 16,
+          borderRadius: 16,
+        }}
+      >
+        Tente novamente
+      </button>
+    </div>
+  );
+}
+
+  return (
+    <div className="h-screen overflow-hidden bg-app text-[#2D2D2D] p-4 flex flex-col justify-between max-w-md mx-auto relative">
       
       {/* TOPO: Botão Fechar e Progresso (Passo 4: 65%) */}
       <div className="flex flex-col gap-4 w-full pt-4">
@@ -83,24 +200,26 @@ export default function StepFour() {
 
       {/* CONTEÚDO CENTRAL: Título, Personagem e Caixa de Texto Mixada */}
       <div className="flex flex-col items-center flex-1 mt-4">
-        <h1 className="text-2xl font-serif font-bold text-left w-full px-2 mb-2">
+        <h1 className="text-2xl font-serif font-bold text-left w-full px-2 mb-12">
           Complete a frase
         </h1>
 
         {/* Ilustração e Botão Flutuante */}
-        <div className="relative w-44 h-48 flex justify-center items-end mb-4">
-          <img 
-            src="https://placeholder.com" 
-            alt="Rei Davi" 
+        <div className="relative flex justify-center items-end mb-4">
+           <Image
+            src="/img/DaviSpeaking.png" 
+            height={224}
+            width={192}
+            alt="Rei Davi com Harpa" 
             className="w-full h-full object-contain"
-          />
+                    />
           <button className="absolute bottom-16 -right-12 bg-white border border-gray-200 px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 text-xs font-bold whitespace-nowrap hover:bg-gray-50">
             <span className="text-blue-500">🔊</span> Escutar novamente
           </button>
         </div>
 
         {/* CAIXA DE TEXTO MIXADA (Igual ao layout da foto) */}
-        <div className="w-full bg-white border border-gray-200 rounded-2xl p-5 min-h-[110px] text-lg font-serif leading-loose shadow-sm text-gray-800">
+        <div className="absolute bottom-100 w-96 bg-white border border-gray-200 rounded-2xl p-5 min-h-[110px] text-lg font-serif leading-loose shadow-sm text-gray-800">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
             
             {/* Lacuna 1 (Início da frase) */}
@@ -143,7 +262,7 @@ export default function StepFour() {
         </p>
 
         {/* Grade de Palavras Disponíveis */}
-        <div className="flex flex-wrap gap-2 justify-center mb-2">
+        <div className="flex flex-wrap gap-2 justify-center mb-12">
           {availableWords.map((word, index) => (
             <button
               key={index}
@@ -161,7 +280,7 @@ export default function StepFour() {
           disabled={!isButtonActive}
           className={`w-full text-lg font-bold py-3 rounded-2xl shadow-md transition-all border-b-4 ${
             isButtonActive 
-              ? 'bg-[#58CC02] text-white border-[#46A302] hover:bg-[#61E002] cursor-pointer' 
+              ? 'btn btn-primary cursor-pointer' 
               : 'bg-[#C0C0C0] text-white border-[#A0A0A0] cursor-not-allowed'
           }`}
         >
@@ -170,7 +289,8 @@ export default function StepFour() {
       </div>
 
       {/* Modais padrão de feedback */}
-      {/* 
+      
+        
       <SuccessModal visible={showSuccess} onContinue={() => { setShowSuccess(false); router.push('/psalms/psalms-1/step-5'); }} />
       <FailureModal visible={showFailure} onRetry={() => {
         setShowFailure(false);
@@ -178,7 +298,7 @@ export default function StepFour() {
         setSlot1(null); setSlot2(null); setSlot3(null);
         setAvailableWords(initialAvailableWords);
       }} />
-      */}
+      
 
     </div>
   );
