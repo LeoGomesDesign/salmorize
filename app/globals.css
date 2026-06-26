@@ -19,66 +19,133 @@
 
   /* BG Colors */
   --color-bg-1: #F7F0E7;
+
+  /* Feedback Colors */
+  --color-success-bg: #CBFFB8;
+  --color-fail-bg: #F8BEC4;
 }
 
- /* Color Gradients SplashScreen */
- @layer utilities {
-    .bg-splash {
+@layer utilities {
+
+  /* ===== BACKGROUNDS ===== */
+  .bg-splash {
     background: linear-gradient(to top, #141414, #6B6B6B);
-    }
-     .bg-app {
-       background-color: var(--color-bg-1);
-     }
-    /* Design system buttons */
-    .btn {
-      @apply inline-flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-colors duration-200;
-    }
-
-    .btn-primary {
-      @apply text-gray-9;
-      background: linear-gradient(90deg, #FEC960 0%, #E7962B 100%);
-      box-shadow: 0 4px 0 rgba(146, 77, 3, 1.0);
-      border-radius: 12px;
-      color: #141414;
-      border: none;
-      font-size: 20px;
-      font-weight: 600;
-    }
-
-    .btn-secondary {
-      @apply inline-flex items-center gap-1 rounded-xl px-3 py-2 font-semibold transition duration-200;
-      background: linear-gradient(90deg, #FFF5E5  0%, #FFE2C4 100%);
-      box-shadow: 0 4px 0 rgba(199, 170, 139, 1);
-      border-radius: 12px;
-      color: #141414;
-      border: none;
-      font-size: 20px;
-      font-weight: 600;
-    }
-
-   
-    .btn-success {
-      @apply inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold transition duration-200;
-      background: linear-gradient(90deg, #538A78 0%, #1E4639 100%);
-      box-shadow: 0 4px 0 rgba(15, 63, 47, 1.0);
-      border-radius: 12px;
-      color: #ffffff;
-      border: none;
-    }
-
-    .btn-success:hover {
-      background-color: #338a5c;
-    }
-
-     .btn-fail {
-      @apply inline-flex items-center justify-center rounded-xl px-6 py-3 font-semibold transition duration-200;
-      background: linear-gradient(90deg, #8D2727 0%, #461E1E 100%);
-      box-shadow: 0 4px 0 rgba(54, 12, 12, 1.0);
-      border-radius: 12px;
-      color: #ffffff;
-      border: none;
-    }
-
-  
   }
 
+  .bg-app {
+    background-color: var(--color-bg-1);
+  }
+
+  /* ===== BOTÕES BASE ===== */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-semibold transition-colors duration-200;
+  }
+
+  .btn-primary {
+    @apply text-gray-9;
+    background: linear-gradient(90deg, #FEC960 0%, #E7962B 100%);
+    box-shadow: 0 4px 0 rgba(146, 77, 3, 1.0);
+    border-radius: 12px;
+    color: #141414;
+    border: none;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-1 rounded-xl px-3 py-2 font-semibold transition duration-200;
+    background: linear-gradient(90deg, #FFF5E5 0%, #FFE2C4 100%);
+    box-shadow: 0 4px 0 rgba(199, 170, 139, 1);
+    border-radius: 12px;
+    color: #141414;
+    border: none;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .btn-success {
+    @apply inline-flex items-center justify-center rounded-xl font-semibold transition duration-200;
+    background: linear-gradient(90deg, #538A78 0%, #1E4639 100%);
+    box-shadow: 0 4px 0 rgba(15, 63, 47, 1.0);
+    border-radius: 12px;
+    color: #ffffff;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px 40px;
+    width: 100%;
+  }
+
+  .btn-success:hover {
+    background: linear-gradient(90deg, #3d7a68 0%, #163325 100%);
+  }
+
+  .btn-fail {
+    @apply inline-flex items-center justify-center w-full rounded-xl font-semibold transition duration-200;
+    background: linear-gradient(90deg, #8D2727 0%, #461E1E 100%);
+    box-shadow: 0 4px 0 rgba(54, 12, 12, 1.0);
+    border-radius: 12px;
+    color: #ffffff;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px 40px;
+    margin-bottom: 4rem;
+    width: 100%;
+  }
+
+  /* ===== BOTÃO FALAR ===== */
+  .btn-speak {
+    @apply w-full bg-white border-2 border-b-4 border-gray-200
+           active:border-b-2 active:mt-[2px] py-4 rounded-2xl
+           shadow-md flex items-center justify-center gap-2
+           font-bold text-lg hover:bg-gray-50 tracking-wider;
+    color: #00A2E8;
+  }
+
+  /* ===== BOTÃO GRAVANDO ===== */
+  .btn-recording {
+    @apply w-full bg-white border-2 border-gray-200 py-4
+           rounded-2xl shadow-md flex items-center
+           justify-center gap-1.5 min-h-[64px] animate-pulse;
+  }
+
+  /* ===== MODAIS DE FEEDBACK ===== */
+  .modal-feedback {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 50;
+  }
+
+  .modal-success {
+    background-color: var(--color-success-bg);
+  }
+
+  .modal-failure {
+    background-color: var(--color-fail-bg);
+  }
+
+  .modal-title {
+    width: 100%;
+    margin-bottom: 1rem;
+    font-size: 24px;
+    font-weight: 700;
+    color: #141414;
+    font-family: var(--font-domine);
+  }
+
+  .modal-subtitle {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    font-size: 16px;
+    font-weight: 500;
+    color: #141414;
+    font-family: var(--font-montserrat);
+  }
+}

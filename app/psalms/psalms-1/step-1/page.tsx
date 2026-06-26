@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import SuccessModal from '@/app/components/SuccessModal';
+import FailureModal from '@/app/components/FailureModal';
 
 // 1. Importações do DnD Kit para o efeito de arrastar
 import {
@@ -154,121 +156,6 @@ export default function StepOne() {
     }
   };
 
-  function SuccessModal({
-  visible,
-  onContinue,
-}: {
-  visible: boolean;
-  onContinue: () => void;
-}) {
-  if (!visible) return null;
-
-  return (  
-    <div className= "w-lg px-6 pt-4"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#CBFFB8",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <h2
-        className="text-align-left w-full mb-4"
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-          
-        }}
-      >
-        Correto!
-      </h2>
-      <button
-        onClick={onContinue}
-        className="btn btn-success mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
-      >
-        Continuar
-      </button>
-    </div>
-  );
-}
-
-  function FailureModal({
-  visible,
-  onRetry,
-}: {
-  visible: boolean;
-  onRetry: () => void;
-}) {
-  if (!visible) return null;
-
-  return (
-    <div className="w-full px-6 pt-4"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#F8BEC4",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <h2
-        className="w-full "
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-        }}
-      >
-        Algo está errado!
-      </h2>
-      <p
-        className="w-full mb-6"
-        style={{
-          fontSize: 16,
-          fontWeight: 500,
-          color: "#141414",
-          fontFamily: "var(--font-montserrat)",
-        }}
-      >
-        Verifique as palavras escolhidas
-      </p>
-      <button
-        onClick={onRetry}
-        className="btn btn-fail w-full mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
-      >
-        Tente novamente
-      </button>
-    </div>
-  );
-}
 
 function DavidSpeechBubble({
   visible,
@@ -310,7 +197,7 @@ function DavidSpeechBubble({
 
   return (
     // Fundo bege claro cobrindo toda a tela
-    <div className="min-h-screen flex flex-col bg-app pt-6 pb-16 px-6">
+    <div className="h-screen overflow-hidden flex flex-col bg-app pt-6 pb-16 px-6">
       
       {/* 1. TOPO: Botão Voltar */}
       <div className="flex flex-col pt-4">
@@ -442,6 +329,8 @@ function DavidSpeechBubble({
           // OU se quiser abrir o modal de recompensa primeiro, como no seu exemplo:
           // setShowRewardModal(true);
         }}
+        title="Perfeito! Você acertou!"
+        buttonLabel="Próxima fase"
       />
    
       <FailureModal
