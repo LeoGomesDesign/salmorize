@@ -1,36 +1,9 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-
-// ─── Tipos ────────────────────────────────────────────────────────────────────
-type PsalmStatus = "completed" | "active" | "locked";
-
-interface PsalmNode {
-  id: number;
-  label: string;
-  status: PsalmStatus;
-  progress: number;
-}
-
-interface SelectedPsalm {
-  psalm: PsalmNode;
-  index: number;
-}
-
-// ─── Dados (em produção viriam do Supabase) ───────────────────────────────────
-const PSALMS: PsalmNode[] = [
-  { id:  1, label: "Salmo 1",  status: "completed", progress: 100 },
-  { id:  2, label: "Salmo 2",  status: "completed", progress: 100 },
-  { id:  3, label: "Salmo 3",  status: "completed", progress: 100 },
-  { id:  4, label: "Salmo 4",  status: "active",    progress: 10  },
-  { id:  5, label: "Salmo 5",  status: "locked",    progress: 0   },
-  { id:  6, label: "Salmo 6",  status: "locked",    progress: 0   },
-  { id:  7, label: "Salmo 7",  status: "locked",    progress: 0   },
-  { id:  8, label: "Salmo 8",  status: "locked",    progress: 0   },
-  { id:  9, label: "Salmo 9",  status: "locked",    progress: 0   },
-  { id: 10, label: "Salmo 10", status: "locked",    progress: 0   },
-];
-
+import Image from "next/image";
+import { useHomeData } from "@/lib/hooks/useHomeData";
+import { PSALM_TOTAL_STEPS, type PsalmNode } from "@/lib/types/home";
 // ─── Layout da escada ─────────────────────────────────────────────────────────
 const STEP_HEIGHT   = 120;   // px entre cada degrau
 const STEP_SIZE     = 64;    // px do círculo padrão
@@ -47,18 +20,17 @@ const getX = (index: number) => (index % 2 === 0 ? X_RIGHT : X_LEFT);
 // ─── Íiro ─────────────────────────────────────────────────────────────
 function BookOpenIcon({ size, color }: { size: number; color: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path
-        d="M2 6.5C2 6.5 5 5 8.5 5C10.5 5 12 6 12 6C12 6 13.5 5 16.5 5C20 5 22 6.5 22 6.5V19.5C22 19.5 20 18 16.5 18C13.5 18 12 19.5 12 19.5C12 19.5 10.5 18 8.5 18C5 18 2 19.5 2 19.5V6.5Z"
-        stroke={color} strokeWidth="1.6" strokeLinejoin="round"
+     <Image
+      src="/img/OpenBible.png"
+      alt="OpenBible"
+      width={42}
+      height={42}
       />
-      <path d="M12 6v13.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
   );
 }
 
 // ─── Degrau individual ────────────────────────────────────────────────────────
-function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenMModal: (psalm: PsalmNode) => void }) {
+function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenModal: (psalm: PsalmNode) => void }) {
   const isActive    = psalm.status === "active";
   const isCompleted = psalm.status === "completed";
   const isLocked = psalm.status === "locked";
@@ -158,9 +130,8 @@ function PsalmModal({
             {psalm.label}
           </h2>
           <p className="text-blue-100 font-medium text-sm">
-            Passo 1 de 6
-          </p>
-        </div>
+            Passo {psalm.currentStep} de {PSALM_TOTAL_STEPS}
+          </p>        </div>
 
         {/* Botão Continuar */} 
         <button
@@ -188,15 +159,11 @@ function PsalmModal({
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function HomePage() {
-  const [streak]  = useState(1);
-  const [gems]    = useState(10);
-  const [energy]  = useState(12);
+  const { loading, error, profile, psalms, refetch } = useHomeData();
   const [selectedPsalm, setSelectedPsalm] = useState<PsalmNode | null>(null);
-  const userName  = "Leonardo";
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const activePsalm = PSALMS.find(p => p.status === "active") ?? PSALMS[0];
-  const activeIndex = PSALMS.findIndex(p => p.status === "active");
+  const activePsalm = psalms.find((p) => p.status === "active") ?? psalms[0];
 
   const handleOpenModal = (psalm: PsalmNode) => {
     setSelectedPsalm(psalm);
@@ -206,30 +173,64 @@ export default function HomePage() {
     setSelectedPsalm(null);
   };
 
+  const psalmCount = psalms.length;
+  const scrollActiveIndex = psalms.findIndex((p) => p.status === "active");
+
+  useEffect(() => {
+    if (loading || psalmCount === 0 || scrollActiveIndex < 0 || !scrollRef.current) return;
+    const activeTop =
+      PADDING_TOP + (psalmCount - 1 - scrollActiveIndex) * STEP_HEIGHT;
+    const viewH = scrollRef.current.clientHeight;
+    scrollRef.current.scrollTop = activeTop - viewH / 2 + STEP_SIZE_ACT / 2;
+  }, [loading, psalmCount, scrollActiveIndex]);
+
+  if (loading) {
+    return (
+      <main
+        className="h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
+      >
+        <p className="text-stone-600 font-medium">Carregando jornada...</p>
+      </main>
+    );
+  }
+
+  if (error || !profile || psalms.length === 0) {
+    return (
+      <main
+        className="h-screen flex flex-col items-center justify-center gap-4 px-6"
+        style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
+      >
+        <p className="text-stone-700 text-center">
+          {error ?? "Não foi possível carregar sua jornada."}
+        </p>
+        <button
+          onClick={refetch}
+          className="rounded-2xl px-6 py-3 font-bold text-stone-800 active:scale-95 transition-transform"
+          style={{ backgroundColor: "#E8A920" }}
+        >
+          Tentar novamente
+        </button>
+      </main>
+    );
+  }
+
+  const userName = profile.displayName;
+  const streak = profile.streak;
+  const gems = profile.gems;
+  const energy = profile.energy;
   // Altura total da área scrollável
-  const totalHeight = PSALMS.length * STEP_HEIGHT + PADDING_TOP + PADDING_BOT;
+  const totalHeight = psalms.length * STEP_HEIGHT + PADDING_TOP + PADDING_BOT;
 
-  // Posição top de cada degrau (0 = Salmo 10 no topo, último = Salmo 1 na base)
-  // Invertemos: índice 0 do PSALMS = mais baixo = maior top
+  // Posição top de cada degrau (0 = último salmo no topo, índice 0 = Salmo 1 na base)
   const getTop = (index: number) =>
-    PADDING_TOP + (PSALMS.length - 1 - index) * STEP_HEIGHT;
-
+    PADDING_TOP + (psalms.length - 1 - index) * STEP_HEIGHT;
   // Centro de cada degrau para a linha tracejada
   const stepCenterX = (index: number) => getX(index);
-  const stepCenterY = (index: number) => getTop(index) + (STEP_SIZE_ACT / 2) + 8; // +8 = metade do anel
+  const stepCenterY = (index: number) => getTop(index) + (STEP_SIZE_ACT / 2) + 8;
 
-  // Scroll automático para o salmo ativo ao montar
-  useEffect(() => {
-    if (!scrollRef.current) return;
-    const activeTop = getTop(activeIndex);
-    const viewH = scrollRef.current.clientHeight;
-    // Centraliza o degrau ativo na viewport do scroll
-    scrollRef.current.scrollTop = activeTop - viewH / 2 + STEP_SIZE_ACT / 2;
-  }, [activeIndex]);
-
-  // Linha tracejada: um único SVG cobrindo toda a altura
   const renderDashedPath = () => {
-    const points = PSALMS.map((_, i) => ({
+    const points = psalms.map((_, i) => ({
       x: stepCenterX(i),
       y: stepCenterY(i),
     }));
@@ -309,8 +310,7 @@ export default function HomePage() {
             {renderDashedPath()}
 
             {/* Degraus */}
-            {PSALMS.map((psalm, index) => {
-              const top  = getTop(index);
+            {psalms.map((psalm, index) => {              const top  = getTop(index);
               const cx   = getX(index);
               const ring = STEP_SIZE_ACT + 16;
 
