@@ -227,7 +227,7 @@ function DavidSpeechBubble({
         </h1>
 
         {/* Bloco da Imagem e Botão de Áudio */}
-        <div className="relative w-48 h-56 flex justify-center items-end mb-4">
+        <div className="relative w-48 h-56 flex justify-center mb-4">
           {/* Substitua o 'src' pela imagem real do Rei Davi quando tiver */}
           <Image
             src="/img/DaviSpeaking.png" 

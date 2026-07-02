@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import SuccessModal from '@/app/components/SuccessModal';
+import FailureModal from '@/app/components/FailureModal';
 
 export default function StepFour() {
   const router = useRouter();
@@ -16,6 +18,8 @@ export default function StepFour() {
   const initialAvailableWords = ['que', 'quem', 'no', 'nos', 'malvados', 'perversos'];
 
   // 2. Estados da Interface
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [bubbleVisible, setBubbleVisible] = useState(false);
   const [slot1, setSlot1] = useState<string | null>(null);
   const [slot2, setSlot2] = useState<string | null>(null);
   const [slot3, setSlot3] = useState<string | null>(null);
@@ -61,118 +65,56 @@ export default function StepFour() {
     }
   };
 
-  function SuccessModal({
+  useEffect(() => {
+        const t = setTimeout(() => setBubbleVisible(true), 400);
+        return () => clearTimeout(t);
+      }, []);
+    
+      useEffect(() => {
+        const audioTimer = setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch(() => {
+              // autoplay may be blocked until user interaction
+            });
+          }
+        }, 200);
+        return () => clearTimeout(audioTimer);
+    }, []);  
+
+
+function DavidSpeechBubble({
   visible,
-  onContinue,
+  audioRef,
+  onPlay,
 }: {
   visible: boolean;
-  onContinue: () => void;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+  onPlay: () => void;
 }) {
-  if (!visible) return null;
-
-  return (  
-    <div className= "w-lg px-6 pt-4"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#CBFFB8",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <h2
-        className="text-align-left w-full mb-4"
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-          
-        }}
-      >
-        Correto!
-      </h2>
-      <button
-        onClick={onContinue}
-        className="btn btn-success mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
-      >
-        Continuar
-      </button>
-    </div>
-  );
-}
-
-  function FailureModal({
-  visible,
-  onRetry,
-}: {
-  visible: boolean;
-  onRetry: () => void;
-}) {
-  if (!visible) return null;
-
   return (
-    <div className="w-full px-6 pt-4"
+    <div
       style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#F8BEC4",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(12px)",
+        transition: "opacity 0.5s ease, transform 0.5s ease",
+        transitionDelay: visible ? "0.6s" : "0s",
       }}
+      className="absolute -bottom-4.5 -right-20 z-1"
     >
-      <h2
-        className="w-full "
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-        }}
-      >
-        Algo está errado!
-      </h2>
-      <p
-        className="w-full mb-6"
-        style={{
-          fontSize: 16,
-          fontWeight: 500,
-          color: "#141414",
-          fontFamily: "var(--font-montserrat)",
-        }}
-      >
-        Verifique as palavras escolhidas
-      </p>
       <button
-        onClick={onRetry}
-        className="btn btn-fail w-full mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
+        type="button"
+        onClick={onPlay}
+        className="relative bg-white rounded-2xl px-4 py-2 shadow-lg flex items-center gap-1 cursor-pointer"
       >
-        Tente novamente
+        <span style={{ fontSize: 18 }}>🔊</span>
+        <span
+          className="text-xs font-medium"
+          style={{ color: "#6B6B6B", fontFamily: "var(--font-montserrat)" }}
+        >
+          Escutar novamente
+        </span>
       </button>
+      <audio ref={audioRef} src="/audio/psalm-1/psalm1_step4.mp3" preload="auto" />
     </div>
   );
 }
@@ -205,7 +147,7 @@ export default function StepFour() {
         </h1>
 
         {/* Ilustração e Botão Flutuante */}
-        <div className="relative flex justify-center items-end mb-4">
+        <div className="relative w-48 h-56 flex justify-center items-end mb-4">
            <Image
             src="/img/DaviSpeaking.png" 
             height={224}
@@ -213,13 +155,23 @@ export default function StepFour() {
             alt="Rei Davi com Harpa" 
             className="w-full h-full object-contain"
                     />
-          <button className="absolute bottom-16 -right-12 bg-white border border-gray-200 px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 text-xs font-bold whitespace-nowrap hover:bg-gray-50">
-            <span className="text-blue-500">🔊</span> Escutar novamente
-          </button>
+           {/* Botão Escutar Novamente posicionado ao lado */}
+          {/* Speech bubble */}
+          <DavidSpeechBubble
+            visible={bubbleVisible}
+            audioRef={audioRef}
+            onPlay={() => {
+              if (audioRef.current) {
+                audioRef.current.play().catch(() => {
+                  // browser may block play until interaction
+                });
+              }
+            }}
+          />
         </div>
 
         {/* CAIXA DE TEXTO MIXADA (Igual ao layout da foto) */}
-        <div className="absolute bottom-100 w-96 bg-white border border-gray-200 rounded-2xl p-5 min-h-[110px] text-lg font-serif leading-loose shadow-sm text-gray-800">
+        <div className="w-full bg-white/50  border border-gray-300 rounded-2xl p-6 min-h-[100px] flex flex-wrap gap-2 items-center justify-center mb-6">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-3">
             
             {/* Lacuna 1 (Início da frase) */}

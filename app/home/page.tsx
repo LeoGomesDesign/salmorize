@@ -18,7 +18,7 @@ const X_LEFT  = AREA_WIDTH * 0.16;
 const getX = (index: number) => (index % 2 === 0 ? X_RIGHT : X_LEFT);
 
 // ─── Íiro ─────────────────────────────────────────────────────────────
-function BookOpenIcon({ size, color }: { size: number; color: string }) {
+function BookOpenIcon( { size: number; color: string }) {
   return (
      <Image
       src="/img/OpenBible.png"
