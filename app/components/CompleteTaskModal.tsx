@@ -6,7 +6,7 @@ import Image from "next/image";
 
 interface TaskCompleteSheetProps {
   isOpen: boolean;
-  onClose: () => void;
+  
   onContinue: () => void;
   points: number;
   accuracy: number;

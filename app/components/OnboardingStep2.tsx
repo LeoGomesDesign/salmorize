@@ -199,13 +199,19 @@ function RewardModal({
 
     try {
       const supabase = createClient();
+      const siteUrl =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${siteUrl}/auth/callback`,
         },
       });
+    } catch (error) {
+      console.error("Erro ao iniciar login com Google:", error);
     } finally {
       setLoading(false);
     }

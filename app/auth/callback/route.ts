@@ -30,5 +30,6 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(`${origin}/home`);
+  const redirectOrigin = process.env.NEXT_PUBLIC_SITE_URL || origin;
+  return NextResponse.redirect(new URL("/home", redirectOrigin).toString());
 }

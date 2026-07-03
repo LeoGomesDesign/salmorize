@@ -103,8 +103,7 @@ export default function StepSixCards() {
   return (
     <div className="h-screen overflow-hidden bg-app text-[#2D2D2D] font-sans p-4 flex flex-col justify-between max-w-md mx-auto relative">
       
-      <button
-        onClick={() => setShowSuccess(true)}>Teste BottomSheet</button>
+    
 
       {/* TOPO: Botão Fechar e Progresso Atualizado (⚡ 8) */}
       <div className="flex flex-col gap-4 w-full pt-4">
