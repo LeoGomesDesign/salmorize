@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import FailureModal from '@/app/components/FailureModal';
+import { TaskCompleteSheet } from '@/app/components/CompleteTaskModal';
 
 export default function StepSixCards() {
   const router = useRouter();
@@ -99,8 +101,11 @@ export default function StepSixCards() {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-[#FDF6EC] text-[#2D2D2D] font-sans p-4 flex flex-col justify-between max-w-md mx-auto relative border border-gray-200 shadow-lg rounded-3xl">
+    <div className="h-screen overflow-hidden bg-app text-[#2D2D2D] font-sans p-4 flex flex-col justify-between max-w-md mx-auto relative">
       
+      <button
+        onClick={() => setShowSuccess(true)}>Teste BottomSheet</button>
+
       {/* TOPO: Botão Fechar e Progresso Atualizado (⚡ 8) */}
       <div className="flex flex-col gap-4 w-full pt-4">
         <div className="flex items-center justify-between w-full">
@@ -207,10 +212,17 @@ export default function StepSixCards() {
       </div>
 
       {/* Chame seus modais normais de feedback aqui embaixo */}
-      {/* 
-      <SuccessModal visible={showSuccess} onContinue={() => { setShowSuccess(false); router.push('/psalms/completed'); }} />
+      
+      <TaskCompleteSheet
+        isOpen={showSuccess} // Controlado pelo seu estado de sucesso
+        onContinue={() => router.push('/home')} // Manda ele de volta para a Home
+        points={12} // Seus pontos salvos no topo (⚡)
+        accuracy={100}
+        timeLabel="0:45"
+      />
+
       <FailureModal visible={showFailure} onRetry={() => { setShowFailure(false); setTranscript(''); }} />
-      */}
+      
 
     </div>
   );

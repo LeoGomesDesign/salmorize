@@ -17,17 +17,7 @@ const X_RIGHT = AREA_WIDTH * 0.84;
 const X_LEFT  = AREA_WIDTH * 0.16;
 const getX = (index: number) => (index % 2 === 0 ? X_RIGHT : X_LEFT);
 
-// ─── Íiro ─────────────────────────────────────────────────────────────
-function BookOpenIcon( { size: number; color: string }) {
-  return (
-     <Image
-      src="/img/OpenBible.png"
-      alt="OpenBible"
-      width={42}
-      height={42}
-      />
-  );
-}
+
 
 // ─── Degrau individual ────────────────────────────────────────────────────────
 function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenModal: (psalm: PsalmNode) => void }) {
@@ -80,7 +70,7 @@ function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenModal: (psa
         display: "flex", alignItems: "center", justifyContent: "center",
         position: "relative", zIndex: 2,
       }}>
-        <BookOpenIcon size={size * 0.42} color={iconColor} />
+        
       </div>
     </button>
   );
@@ -121,7 +111,7 @@ function PsalmModal({
           className="rounded-full flex items-center justify-center"
           style={{ width: 64, height: 64, backgroundColor: "#1D5C4A" }}
         >
-          <BookOpenIcon size={32} color="#ffffff" />
+          
         </div>
 
         {/* Título */}
