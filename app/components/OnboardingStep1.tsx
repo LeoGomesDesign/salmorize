@@ -12,7 +12,7 @@ export default function OnboardingStep1() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-app">
+    <div className="h-screen overflow-hidden flex flex-col bg-app">
       <div className="text-center">
         <Image 
           src="/img/daviFront.png" 
@@ -23,7 +23,7 @@ export default function OnboardingStep1() {
           className="mx-auto mb-8 rounded-lg"
         />
 
-        <div className="space-y-3 mb-8 text-center px-6">
+        <div className="space-y-3 mb-10 text-center px-6">
           <h1 className="text-3xl font-domine font-bold text-gray-9 mb-4">Memorize os Salmos</h1>
         
             <p className="text-lg text-center text-gray-6 mb-10">
