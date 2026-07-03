@@ -5,10 +5,12 @@ import OnboardingStep1 from './OnboardingStep1';
 import OnboardingStep2 from './OnboardingStep2';
 import LoginForm from './LoginForm';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function OnboardingFlow() {
   const { currentStep, totalSteps } = useOnboarding();
   const [loginCompleted, setLoginCompleted] = useState(false);
+  const router = useRouter();
 
   if (loginCompleted) {
     return (
@@ -24,9 +26,7 @@ export default function OnboardingFlow() {
             Sua conta foi criada com sucesso. Você está pronto para começar sua jornada espiritual.
           </p>
           <button
-            onClick={() => {
-              window.location.href = '/dashboard';
-            }}
+            onClick={() => router.push('/dashboard')}
             className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200"
           >
             Ir para Dashboard

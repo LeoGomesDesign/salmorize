@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 export default function Home() {
   const [visible, setVisible] = useState(false);
@@ -14,17 +15,27 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    // Verificar se o usuário já completou o onboarding
-    const userEmail = localStorage.getItem('userEmail');
-    const timer = setTimeout(() => {
-      if (!userEmail) {
-        router.push('/onboarding');
-      } else {
-        router.push('/dashboard');
+    const initAuth = async () => {
+      const supabase = createClient();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error) {
+        console.error('Supabase auth error:', error.message);
+        router.replace('/onboarding');
+        return;
       }
-    }, 2000);
-    
-    return () => clearTimeout(timer);
+
+      if (user) {
+        router.replace('/dashboard');
+      } else {
+        router.replace('/onboarding');
+      }
+    };
+
+    initAuth();
   }, [router]);
 
   return (

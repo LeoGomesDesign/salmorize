@@ -2,25 +2,43 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const email = localStorage.getItem('userEmail');
-    if (!email) {
-      router.push('/onboarding');
-      return;
-    }
-    setUserEmail(email);
+    const init = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data.user?.email) {
+        router.replace('/onboarding');
+        return;
+      }
+
+      setUserEmail(data.user.email);
+      setLoading(false);
+    };
+
+    init();
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userOnboarding');
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.push('/');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-linear-to-b from-blue-50 to-white py-12 px-6 flex items-center justify-center">
+        <p className="text-gray-700">Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-b from-blue-50 to-white py-12 px-6">

@@ -1,14 +1,17 @@
 'use client';
 
-import { useOnboarding } from '../context/OnboardingContext';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useOnboarding } from '../context/OnboardingContext';
+import { createClient } from '@/lib/supabase/client';
 
 interface LoginFormProps {
   onLoginSuccess?: (email: string) => void;
 }
 
 export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
-  const { userProgress, resetOnboarding } = useOnboarding();
+  const { resetOnboarding } = useOnboarding();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,36 +23,47 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
     setMessage(null);
 
     try {
-      // Simular chamada à API
-      // Em produção, você chamaria seu backend aqui
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const supabase = createClient();
+      const signUpResult = await supabase.auth.signUp({ email, password });
 
-      // Salvar dados do progresso do onboarding
-      const onboardingData = {
-        email,
-        completedOnboarding: true,
-        userProgress,
-        loginDate: new Date().toISOString(),
-      };
+      if (signUpResult.error) {
+        if (
+          signUpResult.error.status === 400 &&
+          signUpResult.error.message.includes('already registered')
+        ) {
+          const signInResult = await supabase.auth.signInWithPassword({ email, password });
+          if (signInResult.error) {
+            throw signInResult.error;
+          }
+          setMessage({
+            type: 'success',
+            text: 'Login realizado com sucesso! Redirecionando...',
+          });
+          onLoginSuccess?.(email);
+          setTimeout(() => router.replace('/dashboard'), 600);
+          return;
+        }
 
-      // Salvar no localStorage (você pode integrar com um backend depois)
-      localStorage.setItem('userOnboarding', JSON.stringify(onboardingData));
-      localStorage.setItem('userEmail', email);
+        throw signUpResult.error;
+      }
 
-      setMessage({
-        type: 'success',
-        text: 'Login realizado com sucesso! Seu progresso foi salvo.',
-      });
-
-      // Chamar callback após 1.5s
-      setTimeout(() => {
+      if (signUpResult.data.user) {
+        setMessage({
+          type: 'success',
+          text: 'Conta criada e autenticação realizada. Redirecionando...',
+        });
         onLoginSuccess?.(email);
-      }, 1500);
+        setTimeout(() => router.replace('/dashboard'), 600);
+      } else {
+        setMessage({
+          type: 'success',
+          text: 'Conta criada! Verifique seu email para confirmar o login.',
+        });
+      }
     } catch (error) {
-      setMessage({
-        type: 'error',
-        text: 'Erro ao fazer login. Tente novamente.',
-      });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Erro ao fazer login. Tente novamente.';
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setIsLoading(false);
     }
@@ -57,14 +71,11 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
   const handleSkip = () => {
     resetOnboarding();
-    // Redirecionar para home
-    if (typeof window !== 'undefined') {
-      window.location.href = '/';
-    }
+    router.push('/');
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-b from-indigo-50 to-white">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-linear-to-b from-indigo-50 to-white">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -87,7 +98,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
               type="email"
               id="email"
               value={email}
-              onChange={e => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="seu@email.com"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"
@@ -102,7 +113,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
               type="password"
               id="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-600 transition"

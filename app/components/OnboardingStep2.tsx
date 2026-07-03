@@ -333,13 +333,19 @@ function RewardModal({
             Salve seu progresso criando uma conta com seu email google
           </p>
 
-          <button
+              <button
                 onClick={handleLogin}
                 className="btn btn-secondary w-full gap-2"
                 disabled={loading}
                 style={{ opacity: loading ? 0.75 : 1 }}
               >
-                <Image src="/img/GoogleLogo.png" alt="Google" width={20} height={20} />
+                <Image
+                  src="/img/GoogleLogo.png"
+                  alt="Google"
+                  width={20}
+                  height={20}
+                  style={{ width: 'auto', height: 20 }}
+                />
                 {loading ? "Conectando..." : "Continuar com Google"}
               </button>
        
