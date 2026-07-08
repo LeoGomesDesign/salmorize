@@ -2,7 +2,6 @@
 
 import HeaderBackButton from './HeaderBackButton';
 import Image from 'next/image';
-
 import { useOnboarding } from '../context/OnboardingContext';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from "@/lib/supabase/client";

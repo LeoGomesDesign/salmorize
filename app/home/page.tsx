@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import Image from "next/image";
+
 import { useHomeData } from "@/lib/hooks/useHomeData";
 import { PSALM_TOTAL_STEPS, type PsalmNode } from "@/lib/types/home";
 // ─── Layout da escada ─────────────────────────────────────────────────────────
@@ -251,6 +251,7 @@ export default function HomePage() {
   };
 
   return (
+    console.log("HOME RENDERIZOU"),
     <main
       className="h-screen flex flex-col select-none overflow-hidden"
       style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
