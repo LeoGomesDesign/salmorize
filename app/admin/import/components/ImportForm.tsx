@@ -4,12 +4,14 @@ interface ImportFormProps {
   text: string;
   onTextChange: (value: string) => void;
   onParse: () => void;
+  onImport: () => void;
 }
 
 export default function ImportForm({
   text,
   onTextChange,
   onParse,
+  onImport,
 }: ImportFormProps) {
   return (
     <>
@@ -39,6 +41,17 @@ export default function ImportForm({
         }}
       >
         Interpretar Salmo
+      </button>
+      <button
+        onClick={onImport}
+        style={{
+          marginTop: 12,
+          marginLeft: 12,
+          padding: "12px 24px",
+          cursor: "pointer",
+          }}
+      >
+        Salvar no Banco
       </button>
     </>
   );

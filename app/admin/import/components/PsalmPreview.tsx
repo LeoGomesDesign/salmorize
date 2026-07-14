@@ -1,4 +1,9 @@
-import { ParsedPsalm, PsalmValidation } from "@/lib/types/psalm";
+import {
+  ParsedPsalm,
+  PsalmValidation,
+} from "@/lib/types/psalm";
+
+import { generateTasks } from "@/lib/generator/generateTasks";
 
 interface PsalmPreviewProps {
   psalm: ParsedPsalm;
@@ -21,75 +26,115 @@ export default function PsalmPreview({
       <h2>{psalm.title}</h2>
 
       <div
-    style={{
-        marginTop:20,
-        padding:16,
-        background:"#F5F5F5",
-        borderRadius:10
-    }}
->
+        style={{
+          marginTop: 20,
+          padding: 16,
+          background: "#F5F5F5",
+          borderRadius: 10,
+        }}
+      >
+        <p>
+          <strong>Status:</strong>{" "}
+          {validation.valid
+            ? "✅ Pronto para importar"
+            : "❌ Possui erros"}
+        </p>
 
-<p>
+        <p>
+          <strong>Estrofes:</strong>{" "}
+          {psalm.totalStanzas}
+        </p>
 
-<strong>Status:</strong>
+        <p>
+          <strong>Versos:</strong>{" "}
+          {psalm.totalVerses}
+        </p>
 
-{validation.valid
-? " ✅ Pronto para importar"
-: " ❌ Possui erros"}
+        <p>
+          <strong>Tempo estimado:</strong>{" "}
+          {validation.estimatedMinutes} min
+        </p>
 
-</p>
+        <p>
+          <strong>Battery estimada:</strong>{" "}
+          {validation.estimatedBattery}
+        </p>
+      </div>
 
-<p>
+      {psalm.stanzas.map((stanza) => {
+        const tasks = generateTasks(stanza);
 
-Tempo estimado:
-{validation.estimatedMinutes} minutos
+        return (
+          <div
+            key={stanza.position}
+            style={{
+              marginTop: 32,
+              paddingTop: 20,
+              borderTop: "1px solid #EEE",
+            }}
+          >
+            <h3>
+              📚 Estrofe {stanza.position}
+            </h3>
 
-</p>
+            <p>
+              {stanza.totalVerses} versos
+            </p>
 
-<p>
+            {/* VERSOS */}
+            {stanza.verses.map((verse) => (
+              <div
+                key={verse.position}
+                style={{
+                  marginBottom: 16,
+                }}
+              >
+                <strong>
+                  {verse.position}.
+                </strong>
 
-Battery estimada:
-{validation.estimatedBattery}
+                <div>{verse.text}</div>
 
-</p>
+                <small>
+                  {verse.wordCount} palavras
+                </small>
+              </div>
+            ))}
 
-</div>
-
-      <p>
-        <strong>Estrofes:</strong> {psalm.totalStanzas}
-      </p>
-
-      <p>
-        <strong>Versos:</strong> {psalm.totalVerses}
-      </p>
-
-      {psalm.stanzas.map((stanza) => (
-        <div
-          key={stanza.position}
-          style={{
-            marginTop: 32,
-            borderTop: "1px solid #EEE",
-            paddingTop: 20,
-          }}
-        >
-          <h3>📚 Estrofe {stanza.position}</h3>
-
-          {stanza.verses.map((verse) => (
-            <div
-              key={verse.position}
+            <hr
               style={{
-                marginBottom: 16,
+                margin: "24px 0",
               }}
-            >
-              <strong>{verse.position}.</strong>
+            />
 
-              <div>{verse.text}</div>
+            {/* TASKS */}
+            <h4>
+              🎯 Tasks Geradas
+            </h4>
 
-              <small>{verse.wordCount} palavras</small>
-            </div>
-          ))}
-        </div>
-      ))}
+            {tasks.map((task) => (
+              <div
+                key={task.order}
+                style={{
+                  marginBottom: 8,
+                }}
+              >
+                <strong>
+                  Task {task.order}
+                </strong>
+
+                {" — "}
+
+                {task.type}
+
+                {task.type === "recap"
+                  ? ` (Versos: ${task.recapVerses.join(", ")})`
+                  : ` (Verso ${task.versePosition})`}
+              </div>
+            ))}
+          </div>
+        );
+      })}
     </div>
   );
 }
