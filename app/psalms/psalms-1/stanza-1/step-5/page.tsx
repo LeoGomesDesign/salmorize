@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import SuccessModal from '@/app/components/SuccessModal';
-import FailureModal from '@/app/components/FailureModal';
+import SuccessModal from '@/app/components/game/modals/SuccessModal';
+import FailureModal from '@/app/components/game/modals/FailureModal';
 
 
 

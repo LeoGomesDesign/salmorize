@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useOnboarding } from '../context/OnboardingContext';
+import { useOnboarding } from '../../context/OnboardingContext';
 import { createClient } from '@/lib/supabase/client';
 
 interface LoginFormProps {

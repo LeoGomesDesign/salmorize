@@ -10,6 +10,8 @@ import PsalmPreview from "./components/PsalmPreview";
 import { validatePsalm } from "@/lib/validator/validatePsalm";
 import { importPsalm } from "@/lib/supabase/importPsalm";
 
+import { getUserProgress } from "@/lib/supabase/game/getUserProgress";
+
 
 
 
@@ -32,7 +34,8 @@ export default function ImportPsalmPage() {
 
   async function handleImport() {
 
-
+   // const progress = await getUserProgress(1);
+   // console.log(progress);
    
   if (!result) {
     alert("Interprete o Salmo primeiro.");

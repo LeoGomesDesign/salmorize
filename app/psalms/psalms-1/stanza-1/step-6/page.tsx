@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import FailureModal from '@/app/components/FailureModal';
-import { TaskCompleteSheet } from '@/app/components/CompleteTaskModal';
+import FailureModal from '@/app/components/game/modals/FailureModal';
+import { TaskCompleteSheet } from '@/app/components/game/modals/CompleteTaskModal';
 
 export default function StepSixCards() {
   const router = useRouter();

@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import SuccessModal from '@/app/components/game/modals/SuccessModal';
-import FailureModal from '@/app/components/game/modals/FailureModal';
+import SuccessModal from '@/app/features/game/modals/SuccessModal';
+import FailureModal from '@/app/features/game/modals/FailureModal';
 
 // 1. Importações do DnD Kit para o efeito de arrastar
 import {

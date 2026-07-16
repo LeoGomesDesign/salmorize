@@ -47,6 +47,8 @@ if (psalmError) {
   throw psalmError;
 }
 
+let globalOrder = 1;
+
 for (const stanza of psalm.stanzas) {
   const { data: insertedStanza, error: stanzaError } =
     await supabase
@@ -103,8 +105,10 @@ for (const stanza of psalm.stanzas) {
     const { error: taskError } = await supabase
       .from("tasks")
       .insert({
+        psalm_id: insertedPsalm.id,
         stanza_id: insertedStanza.id,
         verse_id: verseId,
+        global_order: globalOrder,
         task_order: task.order,
         type: task.type,
         recap: task.type === "recap",
@@ -115,6 +119,8 @@ for (const stanza of psalm.stanzas) {
         star_reward: 10,
         xp_reward: 10,
     });
+
+    globalOrder++;
 
     if (taskError) {
       throw taskError;
