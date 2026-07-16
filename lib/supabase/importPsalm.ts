@@ -118,6 +118,7 @@ for (const stanza of psalm.stanzas) {
         battery_cost: 5,
         star_reward: 10,
         xp_reward: 10,
+        variant: task.variant,
     });
 
     globalOrder++;

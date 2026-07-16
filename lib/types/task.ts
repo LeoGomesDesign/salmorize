@@ -11,5 +11,19 @@ export interface GeneratedTask {
 
   type: TaskType;
 
+  variant: string;
+
   recapVerses: number[];
+}
+
+export interface Task {
+  id: string;
+
+  type: TaskType;
+
+  variant: string;
+
+  verses: {
+    text: string;
+  } | null;
 }

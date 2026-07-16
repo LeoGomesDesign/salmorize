@@ -25,6 +25,7 @@ export function generateTasks(
       order,
       versePosition: verse.position,
       type: TASK_SEQUENCE[index % TASK_SEQUENCE.length],
+      variant: "default",
       recapVerses: [],
     });
 
@@ -38,6 +39,7 @@ export function generateTasks(
         order,
         versePosition: null,
         type: "recap",
+        variant: "default",
         recapVerses: [...studiedVerses],
       });
 

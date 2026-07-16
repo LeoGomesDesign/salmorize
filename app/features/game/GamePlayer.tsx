@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getUserProgress } from "@/lib/supabase/game/getUserProgress";
 import { getCurrentTask } from "@/lib/supabase/game/getCurrentTask";
 import TaskRender from "./TaskRender";
+import type { Task } from "@/lib/types/task";
 
 type GamePlayerProps = {
   psalmNumber: number;
@@ -13,8 +14,12 @@ type GamePlayerProps = {
 export default function GamePlayer({
   psalmNumber,
 }: GamePlayerProps) {
-    const [progress, setProgress] = useState<any>(null);
-    const [task, setTask] = useState<any>(null);
+    type UserProgress = {
+      current_task_id: number;
+    }  
+    const [progress, setProgress] =
+    useState<UserProgress | null>(null);
+    const [task, setTask] = useState<Task | null>(null);
 
     useEffect(() => {
         async function load() {

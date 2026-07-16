@@ -29,7 +29,7 @@ export default function Home() {
       }
 
       if (user) {
-        router.replace('/dashboard');
+        router.replace('/home');
       } else {
         router.replace('/onboarding');
       }
