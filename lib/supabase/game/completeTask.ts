@@ -33,16 +33,20 @@ export async function completeTask(
     if (error) throw error;
 
     return {
-      completed: true,
+    completed: true,
+    nextTaskId: null,
     };
   }
 
   // Busca progresso atual
-  const { data: progress } = await supabase
+  const { data: progress, error: progressError } = await supabase
     .from("user_progress")
     .select("stars, xp")
     .eq("id", progressId)
     .single();
+   if (progressError) {
+    throw progressError;
+   } 
 
   // Atualiza progresso
   const { error } = await supabase
@@ -58,5 +62,8 @@ export async function completeTask(
     throw error;
   }
 
-  return nextTask;
+  return {
+    completed: false,
+    nextTaskId: nextTask.id,
+};  
 }

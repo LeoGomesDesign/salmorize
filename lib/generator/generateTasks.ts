@@ -3,9 +3,9 @@ import { GeneratedTask } from "@/lib/types/task";
 
 
 const TASK_SEQUENCE = [
-  "typing",
+ "word_order",
   "speaking",
-  "word_order",
+  
 ] as const;
 
 

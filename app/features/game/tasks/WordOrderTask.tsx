@@ -1,10 +1,14 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+
 import Image from 'next/image';
 import SuccessModal from '@/app/features/game/modals/SuccessModal';
 import FailureModal from '@/app/features/game/modals/FailureModal';
+import type { Task } from "@/lib/types/task";
+
+
+
 
 // 1. Importações do DnD Kit para o efeito de arrastar
 import {
@@ -25,6 +29,7 @@ import {
 } from '@dnd-kit/sortable';
 
 import { CSS } from '@dnd-kit/utilities';
+
 
 // --- COMPONENTE AUXILIAR PARA A PALAVRA ARRASTÁVEL ---
 // Criamos este pequeno bloco para dar o poder de "drag" para cada palavra individualmente
@@ -70,23 +75,52 @@ function SortableWord({ word, onRemove }: { word: string; onRemove: () => void }
   );
 }
 
+
+
+
 // --- COMPONENTE PRINCIPAL DA TELA ---
-export default function StepOne() {
-  const router = useRouter();
+type WordOrderTaskProps = {
+  task: Task;
+  onCompleted: () => Promise<void>;
+};
+
+export default function WordOrderTask({
+  task,
+  onCompleted,
+}: WordOrderTaskProps) {
+
+  
 
   // A frase correta para referência
-  const correctSentence = 'Feliz é todo aquele que não anda';
+  const correctSentence = task.verses?.text ?? "";
 
    // 1. ESTADO: Palavras que aparecem na caixa de resposta (começa vazia)
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
 
    // 2. ESTADO: Palavras disponíveis para clicar (embaralhadas ou na ordem inicial)
-  const [availableWords, setAvailableWords] = useState<string[]>([ 'todo', 'é', 'Feliz',  'aquele', 'que', 'anda', 'não']);
+ 
+  const [availableWords, setAvailableWords] = useState<string[]>([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
+
+  useEffect(() => {
+  setSelectedWords([]);
+
+  if (!correctSentence) {
+    setAvailableWords([]);
+    return;
+  }
+
+  const shuffled = [...correctSentence.split(" ")].sort(
+    () => Math.random() - 0.5
+  );
+
+  setAvailableWords(shuffled);
+
+}, [task.id]);
 
   useEffect(() => {
       const t = setTimeout(() => setBubbleVisible(true), 400);
@@ -102,7 +136,9 @@ export default function StepOne() {
         }
       }, 200);
       return () => clearTimeout(audioTimer);
-  }, []);  
+  }, []); 
+  
+ 
 
   // Configuração de sensores para detectar mouse, touch (celular) e teclado
   const sensors = useSensors(
@@ -189,6 +225,8 @@ function DavidSpeechBubble({
           Escutar novamente
         </span>
       </button>
+
+      {/*TODO: Receber áudio da task */}
       <audio ref={audioRef} src="/audio/psalm-1/psalm1_step1.mp3" preload="auto" />
     </div>
   );
@@ -202,7 +240,7 @@ function DavidSpeechBubble({
       {/* 1. TOPO: Botão Voltar */}
       <div className="flex flex-col pt-4">
         <button 
-        onClick={() => router.push('/home')}
+        onClick={() => window.history.back()}
         className="btn btn-secondary cursor-pointer w-max mb-4">
           <span>&lt;</span> Voltar
         </button>
@@ -290,7 +328,7 @@ function DavidSpeechBubble({
           <div className="flex flex-wrap justify-center gap-2">
             {availableWords.map((word, index) => (
               <button
-                key={index}
+                key={word}
                 onClick={() => handleSelectedWord(word)}
                 className="bg-white border-2 border-b-4 border-gray-200 active:border-b-2 active:mt-[2px] px-4 py-2 rounded-xl text-lg font-medium shadow-sm hover:bg-gray-50"
               >
@@ -321,10 +359,10 @@ function DavidSpeechBubble({
     {/* MODAIS DE FEEDBACK (Ficam aqui embaixo para renderizar por cima da tela) */}
       <SuccessModal
         visible={showSuccess}
-        onContinue={() => {
+        onContinue={ async () => {
           setShowSuccess(false);
-          // Se quiser mandar direto para o step-2 após o acerto:
-          router.push('/psalms/psalms-1/step-2');
+          await onCompleted();
+          
           
           // OU se quiser abrir o modal de recompensa primeiro, como no seu exemplo:
           // setShowRewardModal(true);
