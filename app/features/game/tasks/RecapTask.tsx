@@ -1,10 +1,99 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import SuccessModal from '@/app/features/game/modals/SuccessModal';
+import FailureModal from '@/app/features/game/modals/FailureModal';
+import type { Task } from "@/lib/types/task";
 
-export default function StepThree() {
-  const router = useRouter();
+type RecapRound = {
+  verseId: number;
+  basePhrase: string;
+  correctAnswer: string;
+  alternatives: string[];
+};
+
+type RecapTaskProps = {
+  task: Task;
+  onCompleted: () => Promise<void>;
+};
+
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+
+    [shuffled[i], shuffled[j]] = [
+      shuffled[j],
+      shuffled[i],
+    ];
+  }
+
+  return shuffled;
+}
+
+function buildRecapRounds(task: Task): RecapRound[] {
+  console.log(task.recap_verses);
+  if (!task.recap_verses || task.recap_verses.length === 0) {
+    return [];
+  }
+
+  return task.recap_verses.map((verse) => {
+    const words = verse.text.split(" ");
+
+    const splitIndex = Math.max( 2, 
+      Math.floor(words.length * 0.3) 
+    );
+
+    const basePhrase =
+     words.slice(0, splitIndex).join(" ") + "..."; 
+
+    const correctAnswer =
+      words.slice(splitIndex).join(" ");
+
+    const wrongAnswers = task.recap_verses
+    .filter(v => v.id !== verse.id)
+    .map(v => {
+    const words = v.text.split(" ");
+
+    const splitIndex = Math.max(
+      2,
+      Math.floor(words.length * 0.3)
+    );
+
+    return words.slice(splitIndex).join(" ");
+    });
+
+    console.log({
+  verseAtual: verse.id,
+  recapVerses: task.recap_verses.length,
+  wrongAnswers,
+});
+
+    const alternatives = shuffleArray([
+    correctAnswer,
+    ...wrongAnswers.slice(0, 2),
+    ]);
+
+    
+
+     
+    return {
+      verseId: verse.id,
+      basePhrase,
+      correctAnswer,
+      alternatives,
+    };
+  });
+}
+
+export default function RecapTask({
+  task,
+  onCompleted,
+}: RecapTaskProps) {
+  
+console.log(task);
 
   // 1. ESTADO CENTRAL: Controla em qual rodada do exercício o usuário está (0 ou 1)
   const [currentRound, setCurrentRound] = useState(0);
@@ -14,39 +103,16 @@ export default function StepThree() {
   const [showFailure, setShowFailure] = useState(false);
 
   // 2. BANCO DE DADOS DAS FRASES: Organizado em rodadas (Rounds)
-  const roundsData = [
-    {
-      basePhrase: "Salmo 1: Os dois ....",
-      correctAnswer: "caminhos do homem",
-      alternatives: [
-        "caminhos do homem",
-        "passos do homem",
-        "caminhos da mulher"
-      ]
-    },
-    {
-      basePhrase: "Feliz é todo...",
-      correctAnswer: "aquele que não anda",
-      alternatives: [
-        "aquele que anda",
-        "aquele que não anda",
-        "aquele que caminha"
-      ]
-    },
-    {
-      basePhrase: "conforme os...",
-      correctAnswer: "conselhos dos perversos",
-      alternatives: [
-        "conhecimentos dos justos",
-        "conselhos dos sábios",
-        "conselhos dos perversos"
-      ]
-    }
-   
-  ];
+  const roundsData = buildRecapRounds(task);
+
+  if (roundsData.length === 0) {
+  return <p>Nenhum recap encontrado.</p>;
+  }
 
   // Armazena as respostas que o usuário escolheu em cada rodada
-  const [answers, setAnswers] = useState<(string | null)[]>([null, null]);
+  const [answers, setAnswers] = useState<(string | null)[]>(
+  Array(roundsData.length).fill(null)
+  );
 
   // Captura os dados da rodada que está ativa no momento
   const activeRound = roundsData[currentRound];
@@ -79,121 +145,7 @@ export default function StepThree() {
     }
   };
 
-    function SuccessModal({
-  visible,
-  onContinue,
-}: {
-  visible: boolean;
-  onContinue: () => void;
-}) {
-  if (!visible) return null;
 
-  return (  
-    <div className= "w-lg px-6 pt-4"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#CBFFB8",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <h2
-        className="text-align-left w-full mb-4"
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-          
-        }}
-      >
-        Correto!
-      </h2>
-      <button
-        onClick={onContinue}
-        className="btn btn-success mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
-      >
-        Continuar
-      </button>
-    </div>
-  );
-}
-
-  function FailureModal({
-  visible,
-  onRetry,
-}: {
-  visible: boolean;
-  onRetry: () => void;
-}) {
-  if (!visible) return null;
-
-  return (
-    <div className="w-full px-6 pt-4"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#F8BEC4",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <h2
-        className="w-full "
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-        }}
-      >
-        Algo está errado!
-      </h2>
-      <p
-        className="w-full mb-6"
-        style={{
-          fontSize: 16,
-          fontWeight: 500,
-          color: "#141414",
-          fontFamily: "var(--font-montserrat)",
-        }}
-      >
-        Verifique as palavras escolhidas
-      </p>
-      <button
-        onClick={onRetry}
-        className="btn btn-fail w-full mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
-      >
-        Tente novamente
-      </button>
-    </div>
-  );
-}
 
   return (
     <div className="h-screen overflow-hidden bg-[#FDF6EC] text-[#2D2D2D] font-sans p-4 flex flex-col justify-between max-w-md mx-auto relative border border-gray-200 shadow-lg rounded-3xl">
@@ -202,7 +154,7 @@ export default function StepThree() {
       <div className="flex flex-col gap-4 w-full pt-4">
         <div className="flex items-center justify-between w-full">
           <button 
-            onClick={() => router.push('/home')}
+            onClick={() => window.history.back()}
             className="flex items-center gap-1 bg-white px-4 py-1.5 rounded-xl border border-gray-200 text-sm font-semibold shadow-sm hover:bg-gray-50 text-gray-700"
           >
             ✕ Fechar
@@ -337,10 +289,9 @@ export default function StepThree() {
      {/* MODAIS DE FEEDBACK (Ficam aqui embaixo para renderizar por cima da tela) */}
       <SuccessModal
         visible={showSuccess}
-        onContinue={() => {
+        onContinue={async () => {
           setShowSuccess(false);
-          // Se quiser mandar direto para o step-2 após o acerto:
-          router.push('/psalms/psalms-1/step-4');
+          await onCompleted();
           
           // OU se quiser abrir o modal de recompensa primeiro, como no seu exemplo:
           // setShowRewardModal(true);
@@ -360,6 +311,7 @@ export default function StepThree() {
       {/* Se for usar o RewardModal, adicione ele aqui também da mesma forma */}
     </div>
     
- )   }
+ )  
+}
 
     

@@ -1,8 +1,8 @@
 'use client';
 
-import HeaderBackButton from '../ui/HeaderBackButton';
+import HeaderBackButton from '@/app/components/ui/HeaderBackButton';
 import Image from 'next/image';
-import { useOnboarding } from '../../context/OnboardingContext';
+import { useOnboarding } from '@/app/context/OnboardingContext';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from "@/lib/supabase/client";
 

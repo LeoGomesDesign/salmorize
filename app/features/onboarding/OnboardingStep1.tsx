@@ -1,6 +1,6 @@
 'use client';
 
-import { useOnboarding } from '../../context/OnboardingContext';
+import { useOnboarding } from '@/app/context/OnboardingContext';
 import Image from 'next/image';
 
 export default function OnboardingStep1() {

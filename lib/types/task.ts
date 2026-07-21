@@ -1,7 +1,6 @@
 export type TaskType =
-  | "typing"
-  | "speaking"
   | "word_order"
+  | "speaking"
   | "recap";
 
 export interface GeneratedTask {
@@ -17,7 +16,7 @@ export interface GeneratedTask {
 }
 
 export interface Task {
-  id: string;
+  id: string | number;
 
   type: TaskType;
 
@@ -26,4 +25,10 @@ export interface Task {
   verses: {
     text: string;
   } | null;
+
+  recap_verses: {
+    id: number;
+    text: string;
+    position: number;
+  }[];
 }

@@ -40,7 +40,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
             text: 'Login realizado com sucesso! Redirecionando...',
           });
           onLoginSuccess?.(email);
-          setTimeout(() => router.replace('/dashboard'), 600);
+          setTimeout(() => router.replace('/home'), 600);
           return;
         }
 
@@ -53,7 +53,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
           text: 'Conta criada e autenticação realizada. Redirecionando...',
         });
         onLoginSuccess?.(email);
-        setTimeout(() => router.replace('/dashboard'), 600);
+        setTimeout(() => router.replace('/home'), 600);
       } else {
         setMessage({
           type: 'success',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useOnboarding } from '../../context/OnboardingContext';
+import { useOnboarding } from '@/app/context/OnboardingContext';
 import OnboardingStep1 from './OnboardingStep1';
 import OnboardingStep2 from './OnboardingStep2';
 
