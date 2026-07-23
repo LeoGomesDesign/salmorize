@@ -31,4 +31,10 @@ export interface Task {
     text: string;
     position: number;
   }[];
+
+  psalm_verses: {
+    id: number;
+    text: string;
+    position: number;
+  }[];
 }

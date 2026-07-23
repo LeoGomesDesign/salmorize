@@ -22,6 +22,14 @@ export interface CurrentTask {
     text: string;
     position: number;
   } | null;
+
+  psalm_id: number;
+
+  psalm_verses: {
+  id: number;
+  text: string;
+  position: number;
+}[];
 }
 
 
@@ -41,6 +49,7 @@ export async function getCurrentTask(
       global_order,
       recap,
       recap_verses,
+      psalm_id,
       battery_cost,
       star_reward,
       xp_reward,
@@ -53,7 +62,43 @@ export async function getCurrentTask(
     .eq("id", taskId)
     .single();
 
-    let recapVerses = [];
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error("Task não encontrada.");
+    }
+
+    
+
+    let psalmVerses: CurrentTask["psalm_verses"] = [];
+
+    const { data: stanzas } = await supabase
+    .from("stanzas")
+    .select("id")
+    .eq("psalm_id", data.psalm_id);
+
+    if (stanzas?.length) {
+     const stanzaIds = stanzas.map(s => s.id);
+
+      const { data: verses } = await supabase
+      .from("verses")
+      .select(`
+      id,
+      text,
+      position
+      `)
+      .in("stanza_id", stanzaIds)
+      .order("position");
+
+      psalmVerses = verses ?? [];
+    }
+
+
+ 
+
+  let recapVerses: CurrentTask["recap_verses"] = [];
 
     if (data.recap_verses?.length) {
     const { data: verses } = await supabase
@@ -70,13 +115,9 @@ export async function getCurrentTask(
     }
 
 
-  if (error) {
-    throw error;
-  }
-
-
   return {
     ...data,
     recap_verses: recapVerses,
+    psalm_verses: psalmVerses,
 }
 };

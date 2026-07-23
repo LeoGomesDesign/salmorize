@@ -34,7 +34,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 function buildRecapRounds(task: Task): RecapRound[] {
-  console.log(task.recap_verses);
+
   if (!task.recap_verses || task.recap_verses.length === 0) {
     return [];
   }
@@ -52,7 +52,8 @@ function buildRecapRounds(task: Task): RecapRound[] {
     const correctAnswer =
       words.slice(splitIndex).join(" ");
 
-    const wrongAnswers = task.recap_verses
+  const wrongAnswers = shuffleArray(
+    task.psalm_verses
     .filter(v => v.id !== verse.id)
     .map(v => {
     const words = v.text.split(" ");
@@ -63,13 +64,9 @@ function buildRecapRounds(task: Task): RecapRound[] {
     );
 
     return words.slice(splitIndex).join(" ");
-    });
+    })
+  );
 
-    console.log({
-  verseAtual: verse.id,
-  recapVerses: task.recap_verses.length,
-  wrongAnswers,
-});
 
     const alternatives = shuffleArray([
     correctAnswer,
@@ -93,7 +90,6 @@ export default function RecapTask({
   onCompleted,
 }: RecapTaskProps) {
   
-console.log(task);
 
   // 1. ESTADO CENTRAL: Controla em qual rodada do exercício o usuário está (0 ou 1)
   const [currentRound, setCurrentRound] = useState(0);
@@ -178,86 +174,40 @@ console.log(task);
       Continue o Salmo:
     </h1>
 
-    {/* --- BLOCO DA RODADA 1 --- */}
-    <div className="flex flex-col gap-2.5">
+    {roundsData.map((round, index) => {
+  if (index > currentRound) return null;
+
+  return (
+    <div
+      key={index}
+      className="flex flex-col gap-2.5 transition-all duration-300"
+    >
       <div className="flex items-center gap-3">
-        <img 
-          src="https://placeholder.com" 
-          alt="Rei Davi" 
+        <img
+          src="https://placeholder.com"
+          alt="Rei Davi"
           className="w-11 h-11 rounded-full border border-gray-200 object-cover shadow-sm"
         />
+
         <div className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-sm text-sm font-medium">
-          {roundsData[0].basePhrase}
+          {round.basePhrase}
         </div>
       </div>
-      
+
       <div className="flex items-center gap-3 justify-end pr-1">
         <div className="w-56 h-10 bg-[#F2F2F2] border border-gray-300 rounded-xl flex items-center justify-center shadow-inner text-sm font-medium text-gray-800 px-3">
-          {answers[0] || ""}
+          {answers[index] || ""}
         </div>
-        <img 
-          src="https://placeholder.com" 
-          alt="Ovelhinha" 
+
+        <img
+          src="https://placeholder.com"
+          alt="Ovelhinha"
           className="w-11 h-11 rounded-full object-cover"
         />
       </div>
     </div>
-
-    {/* --- BLOCO DA RODADA 2 --- */}
-    {/* Só aparece se o usuário já estiver na segunda rodada ou já tiver respondido ela */}
-    {currentRound >= 1 && (
-      <div className="flex flex-col gap-2.5 transition-all duration-300">
-        <div className="flex items-center gap-3">
-          <img 
-            src="https://placeholder.com" 
-            alt="Rei Davi" 
-            className="w-11 h-11 rounded-full border border-gray-200 object-cover shadow-sm"
-          />
-          <div className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-sm text-sm font-medium">
-            {roundsData[1].basePhrase}
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3 justify-end pr-1">
-          <div className="w-56 h-10 bg-[#F2F2F2] border border-gray-300 rounded-xl flex items-center justify-center shadow-inner text-sm font-medium text-gray-800 px-3">
-            {answers[1] || ""}
-          </div>
-          <img 
-            src="https://placeholder.com" 
-            alt="Ovelhinha" 
-            className="w-11 h-11 rounded-full object-cover"
-          />
-        </div>
-      </div>
-    )}
-
-        {/* --- BLOCO DA RODADA 3 --- */}
-    {/* Só aparece se o usuário já estiver na terceira rodada ou já tiver respondido ela */}
-    {currentRound >= 2 && (
-      <div className="flex flex-col gap-2.5 transition-all duration-300">
-        <div className="flex items-center gap-3">
-          <img 
-            src="https://placeholder.com" 
-            alt="Rei Davi" 
-            className="w-11 h-11 rounded-full border border-gray-200 object-cover shadow-sm"
-          />
-          <div className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-sm text-sm font-medium">
-            {roundsData[2].basePhrase}
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3 justify-end pr-1">
-          <div className="w-56 h-10 bg-[#F2F2F2] border border-gray-300 rounded-xl flex items-center justify-center shadow-inner text-sm font-medium text-gray-800 px-3">
-            {answers[2] || ""}
-          </div>
-          <img 
-            src="https://placeholder.com" 
-            alt="Ovelhinha" 
-            className="w-11 h-11 rounded-full object-cover"
-          />
-        </div>
-      </div>
-    )}
+  );
+})}
   </div>
 
 
