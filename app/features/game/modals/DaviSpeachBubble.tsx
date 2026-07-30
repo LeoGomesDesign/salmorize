@@ -14,7 +14,7 @@ export default function DavidSpeechBubble({
   visible,
   audioRef,
   onPlay,
-  audioSrc,
+  audioUrl,
 }: DavidSpeechBubbleProps) {
 
   return (

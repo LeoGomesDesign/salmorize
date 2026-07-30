@@ -27,6 +27,8 @@ export default function SpeakingTask({
   const targetWords =
   targetPhrase.split(" ");
 
+ 
+
   // Estados da Interface
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState('');  
@@ -138,20 +140,53 @@ export default function SpeakingTask({
     }
   };
 
+  function normalizeText(text: string) {
+  return text
+    .normalize("NFD") // separa os acentos
+    .replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "") // remove pontuação
+    .replace(/\s+/g, " ") // remove espaços duplicados
+    .trim();
+}
+
   // Avalia se o que foi falado bate com a frase do Salmo
   const verifySpeech = (spokenText: string) => {
-    // Usamos uma verificação simples removendo pontos e letras maiúsculas
-    const cleanUserText = spokenText.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-    const cleanTargetText = targetPhrase.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-    console.log('Usuário:', cleanUserText);
-    console.log('Esperado:', cleanTargetText);
+    const targetWords = normalizeText(targetPhrase).split(" ");
+    const spokenWords = normalizeText(spokenText).split(" ");
 
-    if (cleanUserText === cleanTargetText) {
-      setShowSuccess(true);
-    } else {
-      setShowFailure(true);
+     let correct = 0;
+
+  const usedIndexes = new Set<number>();
+
+  for (const targetWord of targetWords) {
+    const foundIndex = spokenWords.findIndex(
+      (word, index) =>
+        !usedIndexes.has(index) &&
+        word === targetWord
+    );
+
+    if (foundIndex !== -1) {
+      usedIndexes.add(foundIndex);
+      correct++;
     }
-  };
+  }
+
+  const accuracy = correct / targetWords.length;
+  const percentage = Math.round(accuracy * 100);
+
+  console.log("Esperado:", targetWords);
+  console.log("Falado:", spokenWords);
+  console.log(`Acerto: ${percentage}%`);
+
+  if (accuracy >= 0.8) {
+    setShowSuccess(true);
+  } else {
+    setShowFailure(true);
+  }
+};
+  
+  
 
   // 2. FUNÇÃO MÁGICA: Limpa o texto falado e verifica se a palavra específica já foi dita
   const isWordSpoken = (word: string) => {

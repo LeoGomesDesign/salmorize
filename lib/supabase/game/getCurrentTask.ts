@@ -21,6 +21,7 @@ export interface CurrentTask {
     id: number;
     text: string;
     position: number;
+    audio_url: string | null;
   } | null;
 
   psalm_id: number;
@@ -56,7 +57,8 @@ export async function getCurrentTask(
       verses (
         id,
         text,
-        position
+        position,
+        audio_url
       )
     `)
     .eq("id", taskId)
@@ -119,5 +121,5 @@ export async function getCurrentTask(
     ...data,
     recap_verses: recapVerses,
     psalm_verses: psalmVerses,
-}
+  }
 };

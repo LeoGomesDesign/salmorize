@@ -4,6 +4,7 @@ export const PSALM_TOTAL_STEPS = 6;
 
 export type PsalmNode = {
   id: number;
+  number: number;
   label: string;
   status: PsalmStatus;
   progress: number;

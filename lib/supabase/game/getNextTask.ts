@@ -17,7 +17,10 @@ export async function getNextTask(currentTaskId: number) {
   // Busca a próxima task
   const { data: nextTask, error: nextTaskError } = await supabase
     .from("tasks")
-    .select("id")
+    .select(`
+      id,
+      stanza_id
+      `)
     .eq("psalm_id", currentTask.psalm_id)
     .eq("global_order", currentTask.global_order + 1)
     .maybeSingle();

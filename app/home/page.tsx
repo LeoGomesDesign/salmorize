@@ -79,10 +79,12 @@ function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenModal: (psa
 // ─── Modal ────────────────────────────────────────────────────────────────────
 function PsalmModal({ 
   psalm, 
-  onClose 
+  onClose,
+  onContinue, 
 }: { 
   psalm: PsalmNode | null; 
-  onClose: () => void 
+  onClose: () => void;
+  onContinue: (psalm: PsalmNode) => void; 
 }) {
   if (!psalm) return null;
 
@@ -125,7 +127,7 @@ function PsalmModal({
 
         {/* Botão Continuar */} 
         <button
-          onClick={onClose}
+          onClick={() => onContinue(psalm)}
           className="w-full rounded-2xl px-6 py-3 font-bold text-base text-stone-800 active:scale-95 transition-transform"
           style={{ backgroundColor: "#F2EDE4" }}
         >
@@ -150,6 +152,7 @@ function PsalmModal({
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function HomePage() {
   const { loading, error, profile, psalms, refetch } = useHomeData();
+  console.log("PSALMS:", psalms);
   const [selectedPsalm, setSelectedPsalm] = useState<PsalmNode | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -157,6 +160,10 @@ export default function HomePage() {
 
   const handleOpenModal = (psalm: PsalmNode) => {
     setSelectedPsalm(psalm);
+  };
+
+  const handleContinue = (psalm: PsalmNode) => {
+    window.location.href = `/lesson/${psalm.number}`;
   };
 
   const handleCloseModal = () => {
@@ -251,7 +258,7 @@ export default function HomePage() {
   };
 
   return (
-    console.log("HOME RENDERIZOU"),
+    
     <main
       className="h-screen flex flex-col select-none overflow-hidden"
       style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
@@ -351,7 +358,11 @@ export default function HomePage() {
       </div>
 
       {/* ── Modal ──────────────────────────────────────────────────────── */}
-      <PsalmModal psalm={selectedPsalm} onClose={handleCloseModal} />
+      <PsalmModal 
+        psalm={selectedPsalm} 
+        onClose={handleCloseModal}
+        onContinue={handleContinue}
+      />
     </main>
   );
 }

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { buildPsalmNodes } from "@/lib/home/build-psalm-nodes";
-import type { Profile, Psalm, UserPsalmProgress } from "@/lib/types/database";
+import type { Profile, Psalm } from "@/lib/types/database"
 import type { HomeData } from "@/lib/types/home";
 
 function profileFromRow(row: Profile): HomeData["profile"] {
@@ -57,10 +57,17 @@ export async function fetchHomeData(
   const profileRow = await ensureProfile(supabase, user.id, fallbackName);
 
   const [psalmsResult, progressResult] = await Promise.all([
-    supabase.from("psalms").select("*").order("number"),
     supabase
-      .from("user_psalm_progress")
-      .select("*")
+    .from("psalms")
+    .select("*")
+    .order("number"),
+    supabase
+      .from("user_progress")
+      .select(`
+        psalm_id,
+        current_task_id,
+        completed
+        `)
       .eq("user_id", user.id),
   ]);
 
@@ -68,10 +75,61 @@ export async function fetchHomeData(
   if (progressResult.error) throw progressResult.error;
 
   const psalms = (psalmsResult.data ?? []) as Psalm[];
-  const progress = (progressResult.data ?? []) as UserPsalmProgress[];
+  console.table(psalms);
+  const progress = progressResult.data ?? [];
+
+  const progressWithSteps = await Promise.all(
+    progress.map(async (row) => {
+      
+      //Busca a task atual
+      const { data: task, error: taskError } = await supabase
+      .from("tasks")
+      .select("stanza_id")
+      .eq("id", row.current_task_id)
+      .single();
+
+      if (taskError) {
+      throw taskError;
+      
+      }
+
+      if(!task) {
+        throw new Error("Task não encontrada.")
+      }
+
+    // Busca todas as stanzas do Salmo
+    const { data: stanzas, error: stanzasError } = await supabase
+      .from("stanzas")
+      .select("id")
+      .eq("psalm_id", row.psalm_id)
+      .order("position");
+
+    if (stanzasError) {
+      throw stanzasError;
+    }
+
+    const totalSteps = stanzas.length;
+
+    const currentStep =
+      stanzas.findIndex(
+        (stanza) => stanza.id === task.stanza_id
+      ) + 1;
+
+    const progress =
+      Math.round((currentStep / totalSteps) * 100);
+
+    return {
+      ...row,
+      current_step: currentStep,
+      total_steps: totalSteps,
+      progress,
+    };
+  })
+);
+
 
   return {
     profile: profileFromRow(profileRow),
-    psalms: buildPsalmNodes(psalms, progress),
+    psalms: buildPsalmNodes(psalms, progressWithSteps),
   };
 }

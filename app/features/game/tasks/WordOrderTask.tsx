@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-
+import { getVerseAudioUrl } from "@/lib/storage/getVerseAudioUrl";
 import Image from 'next/image';
 import SuccessModal from '@/app/features/game/modals/SuccessModal';
 import FailureModal from '@/app/features/game/modals/FailureModal';
@@ -105,6 +105,7 @@ export default function WordOrderTask({
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
+  const [audioUrl, setAudioUrl] = useState("");
 
   useEffect(() => {
   setSelectedWords([]);
@@ -125,19 +126,25 @@ export default function WordOrderTask({
   useEffect(() => {
       const t = setTimeout(() => setBubbleVisible(true), 400);
       return () => clearTimeout(t);
-    }, []);
-  
-    useEffect(() => {
-      const audioTimer = setTimeout(() => {
-        if (audioRef.current) {
-          audioRef.current.play().catch(() => {
-            // autoplay may be blocked until user interaction
-          });
-        }
-      }, 200);
-      return () => clearTimeout(audioTimer);
-  }, []); 
-  
+  }, []);
+
+useEffect(() => {
+  if (!audioUrl) return;
+ const audioTimer = setTimeout(() => {
+  audioRef.current?.play().catch(() => {});
+  }, 200);
+
+  return () => clearTimeout(audioTimer);
+}, [audioUrl]); 
+    
+useEffect(() => {
+  if (!task.verses) return;
+
+  const url = getVerseAudioUrl(task.verses.id);
+
+  console.log(url);
+  setAudioUrl(url);
+}, [task.id]);
  
 
   // Configuração de sensores para detectar mouse, touch (celular) e teclado
@@ -191,16 +198,19 @@ export default function WordOrderTask({
       setShowFailure(true);
     }
   };
+  
 
 
 function DavidSpeechBubble({
   visible,
   audioRef,
   onPlay,
+  audioUrl,
 }: {
   visible: boolean;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   onPlay: () => void;
+  audioUrl: string;
 }) {
   return (
     <div
@@ -227,7 +237,7 @@ function DavidSpeechBubble({
       </button>
 
       {/*TODO: Receber áudio da task */}
-      <audio ref={audioRef} src="/audio/psalm-1/psalm1_step1.mp3" preload="auto" />
+      <audio ref={audioRef} src={audioUrl} preload="auto" />
     </div>
   );
 }
@@ -280,11 +290,10 @@ function DavidSpeechBubble({
           <DavidSpeechBubble
             visible={bubbleVisible}
             audioRef={audioRef}
+            audioUrl={audioUrl}
             onPlay={() => {
               if (audioRef.current) {
-                audioRef.current.play().catch(() => {
-                  // browser may block play until interaction
-                });
+                audioRef.current.play().catch(() => {});
               }
             }}
           />

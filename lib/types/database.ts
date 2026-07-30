@@ -11,15 +11,18 @@ export type Profile = {
 export type Psalm = {
   id: number;
   number: number;
-  label: string;
+  title: string;
+  translation: string;
+  total_stanzas: number;
+  total_verses: number;
 };
 
-export type UserPsalmProgress = {
-  id: string;
+export type UserProgress = {
+  id: number;
   user_id: string;
   psalm_id: number;
-  current_step: number;
-  progress: number;
-  completed_at: string | null;
-  updated_at: string;
+  current_task_id: number;
+  stars: number;
+  xp: number;
+  completed: boolean;
 };

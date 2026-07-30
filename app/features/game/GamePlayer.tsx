@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { useRouter } from "next/navigation";
 import { getUserProgress } from "@/lib/supabase/game/getUserProgress";
 import { getCurrentTask } from "@/lib/supabase/game/getCurrentTask";
 import TaskRender from "./TaskRender";
@@ -22,7 +22,7 @@ type UserProgress = {
 export default function GamePlayer({
   psalmNumber,
 }: GamePlayerProps) {
-    
+    const router = useRouter();
     const [progress, setProgress] =
     useState<UserProgress | null>(null);
     const [task, setTask] = useState<Task | null>(null);
@@ -55,10 +55,10 @@ export default function GamePlayer({
     task.id
   );
 
-  if (result.completed) {
-  console.log("Salmo concluído!");
-  return;
-}
+  if (result.completed || result.sessionCompleted) {
+    router.push("/home");
+    return;
+  }
 
   const nextTask = await getCurrentTask(result.nextTaskId!);
 
@@ -68,7 +68,7 @@ export default function GamePlayer({
     ...progress,
     current_task_id: result.nextTaskId!,
   });
-}
+ }
 
   return (
     <main>

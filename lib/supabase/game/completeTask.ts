@@ -10,7 +10,11 @@ export async function completeTask(
   // Busca informações da task atual
   const { data: task, error: taskError } = await supabase
     .from("tasks")
-    .select("star_reward, xp_reward")
+    .select(`
+      star_reward,
+      xp_reward,
+      stanza_id
+      `)
     .eq("id", currentTaskId)
     .single();
 
@@ -21,23 +25,6 @@ export async function completeTask(
   // Descobre a próxima task
   const nextTask = await getNextTask(currentTaskId);
 
-  // Se não existir próxima task, o Salmo terminou
-  if (!nextTask) {
-    const { error } = await supabase
-      .from("user_progress")
-      .update({
-        completed: true,
-      })
-      .eq("id", progressId);
-
-    if (error) throw error;
-
-    return {
-    completed: true,
-    nextTaskId: null,
-    };
-  }
-
   // Busca progresso atual
   const { data: progress, error: progressError } = await supabase
     .from("user_progress")
@@ -46,7 +33,34 @@ export async function completeTask(
     .single();
    if (progressError) {
     throw progressError;
-   } 
+  } 
+
+  // Se não existir próxima task, o Salmo terminou
+  if (!nextTask) {
+    const { error } = await supabase
+      .from("user_progress")
+      .update({
+        completed: true,
+        stars: progress.stars + task.star_reward,
+        xp: progress.xp + task.xp_reward,
+      })
+      .eq("id", progressId);
+
+    if (error) {
+      throw error;
+    } 
+
+    return {
+    completed: true,
+    nextTaskId: null,
+    sessionCompleted: true,
+    };
+  }
+
+  const sessionCompleted =
+  nextTask.stanza_id !== task.stanza_id;
+
+  
 
   // Atualiza progresso
   const { error } = await supabase
@@ -65,5 +79,6 @@ export async function completeTask(
   return {
     completed: false,
     nextTaskId: nextTask.id,
+    sessionCompleted,
 };  
 }
