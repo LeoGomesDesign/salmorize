@@ -93,6 +93,7 @@ export default function WordOrderTask({
 
   // A frase correta para referência
   const correctSentence = task.verses?.text ?? "";
+  const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
 
    // 1. ESTADO: Palavras que aparecem na caixa de resposta (começa vazia)
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
@@ -258,12 +259,14 @@ function DavidSpeechBubble({
         <div className="flex items-center gap-2 flex-1 mx-4">
           {/* Barra de progresso amarela */}
           <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden shadow-inner">
-            <div className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full w-[15%] rounded-full"></div>
+            <div className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full rounded-full transition-all duration-500"
+                 style={{width: `${progressPercent}%`,}} 
+            ></div>
           </div>
           
           {/* Ícone de raio/energia */}
           <div className="flex items-center gap-1 font-bold text-lg text-[#2D2D2D]">
-            <span className="text-[#FFC72C]">⚡</span> 12
+            <span className="text-[#FFC72C]">⚡</span> {task.battery}
           </div>
         </div>
       </div>

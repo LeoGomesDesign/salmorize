@@ -13,10 +13,16 @@ type GamePlayerProps = {
 };
 type UserProgress = {
   id: number;
+  user_id: string;
+
   current_task_id: number;
+
   stars: number;
   xp: number;
   completed: boolean;
+
+  battery: number;
+  max_battery: number;
 }; 
 
 export default function GamePlayer({
@@ -52,7 +58,8 @@ export default function GamePlayer({
 
   const result = await completeTask(
     progress.id,
-    task.id
+    task.id,
+    progress.user_id
   );
 
   if (result.completed || result.sessionCompleted) {
@@ -67,6 +74,7 @@ export default function GamePlayer({
   setProgress({
     ...progress,
     current_task_id: result.nextTaskId!,
+    battery: result.battery,
   });
  }
 
@@ -79,7 +87,11 @@ export default function GamePlayer({
       </pre>
 
       <TaskRender 
-       task={task}
+       task={{
+        ...task,
+        battery: progress.battery,
+        max_battery: progress.max_battery,
+      }}
        onCompleted={handleTaskCompleted}
       />
     </main>

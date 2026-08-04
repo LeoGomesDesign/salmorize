@@ -90,7 +90,7 @@ export default function RecapTask({
   onCompleted,
 }: RecapTaskProps) {
   
-
+  const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
   // 1. ESTADO CENTRAL: Controla em qual rodada do exercício o usuário está (0 ou 1)
   const [currentRound, setCurrentRound] = useState(0);
 
@@ -156,15 +156,16 @@ export default function RecapTask({
             ✕ Fechar
           </button>
           <div className="flex items-center gap-1 font-bold text-lg text-[#2D2D2D]">
-            <span className="text-[#FFC72C]">⚡</span> 4
+            <span className="text-[#FFC72C]">⚡</span> {task.battery}
           </div>
         </div>
         <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden shadow-inner">
           {/* Progresso dinâmico com base na rodada atual */}
-          <div 
-            className="bg-[#FFC72C] h-full rounded-full transition-all duration-500"
-            style={{ width: currentRound === 0 ? '45%' : '60%' }}
-          ></div>
+          <div
+            className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full rounded-full transition-all duration-500"
+            style={{
+            width: `${progressPercent}%`,}}
+          />
         </div>
       </div>
 

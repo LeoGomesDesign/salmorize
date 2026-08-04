@@ -3,7 +3,8 @@ import { getNextTask } from "./getNextTask";
 
 export async function completeTask(
   progressId: number,
-  currentTaskId: number
+  currentTaskId: number,
+  userId: string
 ) {
   const supabase = createClient();
 
@@ -13,6 +14,7 @@ export async function completeTask(
     .select(`
       star_reward,
       xp_reward,
+      battery_cost,
       stanza_id
       `)
     .eq("id", currentTaskId)
@@ -21,6 +23,15 @@ export async function completeTask(
   if (taskError) {
     throw taskError;
   }
+const { data: userStats, error: userStatsError } = await supabase
+  .from("user_stats")
+  .select("battery")
+  .eq("id", userId)
+  .single();
+
+if (userStatsError) {
+  throw userStatsError;
+}
 
   // Descobre a próxima task
   const nextTask = await getNextTask(currentTaskId);
@@ -54,11 +65,28 @@ export async function completeTask(
     completed: true,
     nextTaskId: null,
     sessionCompleted: true,
+    battery: newBattery,
     };
   }
 
   const sessionCompleted =
   nextTask.stanza_id !== task.stanza_id;
+
+const newBattery = Math.max(
+  0,
+  userStats.battery - task.battery_cost
+);
+
+const { error: batteryError } = await supabase
+  .from("user_stats")
+  .update({
+    battery: newBattery,
+  })
+  .eq("id", userId);
+
+if (batteryError) {
+  throw batteryError;
+}  
 
   
 
@@ -80,5 +108,6 @@ export async function completeTask(
     completed: false,
     nextTaskId: nextTask.id,
     sessionCompleted,
-};  
+    battery: newBattery,
+  };  
 }

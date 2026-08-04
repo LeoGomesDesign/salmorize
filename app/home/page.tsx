@@ -1,153 +1,26 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-
 import { useHomeData } from "@/lib/hooks/useHomeData";
 import { PSALM_TOTAL_STEPS, type PsalmNode } from "@/lib/types/home";
-// ─── Layout da escada ─────────────────────────────────────────────────────────
-const STEP_HEIGHT   = 120;   // px entre cada degrau
-const STEP_SIZE     = 64;    // px do círculo padrão
-const STEP_SIZE_ACT = 64;    // px do círculo ativo
-const AREA_WIDTH    = 390;   // largura da área (max-w-md)
-const PADDING_TOP   = 72;    // espaço acima do último degrau
-const PADDING_BOT   = 40;    // espaço abaixo do primeiro degrau
+import PsalmModal from "../features/game/modals/PsalmModal";
+import PsalmStep from "../features/game/modals/PsalmStep";
 
-// Alternância X: índice 0 = degrau mais baixo (Salmo 1)
+const STEP_HEIGHT = 120;
+const STEP_SIZE_ACT = 64;
+
+const AREA_WIDTH = 390;
+
+const PADDING_TOP = 72;
+const PADDING_BOT = 40;
+
 const X_RIGHT = AREA_WIDTH * 0.84;
-const X_LEFT  = AREA_WIDTH * 0.16;
-const getX = (index: number) => (index % 2 === 0 ? X_RIGHT : X_LEFT);
+const X_LEFT = AREA_WIDTH * 0.16;
+
+const getX = (index: number) =>
+  index % 2 === 0 ? X_RIGHT : X_LEFT;
 
 
-
-// ─── Degrau individual ────────────────────────────────────────────────────────
-function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenModal: (psalm: PsalmNode) => void }) {
-  const isActive    = psalm.status === "active";
-  const isCompleted = psalm.status === "completed";
-  const isLocked = psalm.status === "locked";
-
-  const size      = isActive ? STEP_SIZE_ACT : STEP_SIZE;
-  const bg        = isCompleted ? "#22c55e" : isActive ? "#1D5C4A" : "#E2E0DB";
-  const iconColor = isCompleted || isActive ? "#ffffff" : "#B0ADA8";
-  const shadow    = isCompleted || isActive
-    ? "0 8px 0 rgba(0,0,0,0.22), 0 2px 10px rgba(0,0,0,0.12)"
-    : "0 6px 0 #C4C0B8, 0 2px 6px rgba(0,0,0,0.07)";
-
-  // Arco de progresso
-  const R     = (size / 2) + 4;
-  const circ  = 2 * Math.PI * R;
-  const dash  = circ - (circ * psalm.progress) / 100;
-  const ring  = size + 16;
-
-  return (
-    <button
-      onClick={() => !isLocked && onOpenModal(psalm)}
-      disabled={isLocked}
-      className="cursor-pointer hover:scale-110 active:scale-95 transition-transform disabled:cursor-not-allowed"
-      style={{ position: "relative", width: ring, height: ring, display: "flex", alignItems: "center", justifyContent: "center", border: "none", background: "none", padding: 0 }}
-    >
-      {/* Arco de progresso */}
-      {isActive && (
-        <svg
-          width={ring} height={ring}
-          viewBox={`0 0 ${ring} ${ring}`}
-          style={{ position: "absolute", top: 0, left: 0 }}
-        >
-          <circle cx={ring / 2} cy={ring / 2} r={R}
-            fill="none" stroke="#D4D0C8" strokeWidth="4" />
-          <circle cx={ring / 2} cy={ring / 2} r={R}
-            fill="none" stroke="#22c55e" strokeWidth="4"
-            strokeDasharray={circ} strokeDashoffset={dash}
-            strokeLinecap="round"
-            style={{ transform: "rotate(-90deg)", transformOrigin: "50% 50%" }}
-          />
-        </svg>
-      )}
-
-      {/* Círculo principal */}
-      <div style={{
-        width: size, height: size, borderRadius: "50%",
-        backgroundColor: bg, boxShadow: shadow,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        position: "relative", zIndex: 2,
-      }}>
-        
-      </div>
-    </button>
-  );
-}
-
-// ─── Modal ────────────────────────────────────────────────────────────────────
-function PsalmModal({ 
-  psalm, 
-  onClose,
-  onContinue, 
-}: { 
-  psalm: PsalmNode | null; 
-  onClose: () => void;
-  onContinue: (psalm: PsalmNode) => void; 
-}) {
-  if (!psalm) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", animation: "fadeIn 0.3s ease-in-out" }}
-      onClick={onClose}
-    >
-      <div
-        className="relative rounded-3xl px-8 py-8 flex flex-col items-center gap-6 max-w-sm mx-4 shadow-2xl"
-        style={{ backgroundColor: "#2B5FA6" }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Fechar modal */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:opacity-80 transition-opacity"
-          style={{ fontSize: "24px", background: "none", border: "none", cursor: "pointer" }}
-        >
-          ✕
-        </button>
-
-        {/* Ícone do livro no topo */}
-        <div
-          className="rounded-full flex items-center justify-center"
-          style={{ width: 64, height: 64, backgroundColor: "#1D5C4A" }}
-        >
-          
-        </div>
-
-        {/* Título */}
-        <div className="text-center">
-          <h2 className="text-white font-black text-3xl mb-2">
-            {psalm.label}
-          </h2>
-          <p className="text-blue-100 font-medium text-sm">
-            Passo {psalm.currentStep} de {PSALM_TOTAL_STEPS}
-          </p>        </div>
-
-        {/* Botão Continuar */} 
-        <button
-          onClick={() => onContinue(psalm)}
-          className="w-full rounded-2xl px-6 py-3 font-bold text-base text-stone-800 active:scale-95 transition-transform"
-          style={{ backgroundColor: "#F2EDE4" }}
-        >
-          Continuar
-        </button>
-      </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-      `}</style>
-    </div>
-  );
-}
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function HomePage() {
@@ -163,6 +36,11 @@ export default function HomePage() {
   };
 
   const handleContinue = (psalm: PsalmNode) => {
+    if (energy <= 0) {
+      alert("Você está sem energia.");
+      return;
+    }
+
     window.location.href = `/lesson/${psalm.number}`;
   };
 
@@ -322,7 +200,22 @@ export default function HomePage() {
                     zIndex: 10,
                   }}
                 >
-                  <PsalmStep psalm={psalm} onOpenModal={handleOpenModal} />
+                  {/*<PsalmStep psalm={psalm} onOpenModal={handleOpenModal} />*/}
+                  <PsalmStep
+  psalm={{ ...psalm, status: "completed" }}
+  onOpenModal={handleOpenModal}
+/>
+
+<PsalmStep
+  psalm={{ ...psalm, status: "active" }}
+  onOpenModal={handleOpenModal}
+/>
+
+<PsalmStep
+  psalm={{ ...psalm, status: "locked" }}
+  onOpenModal={handleOpenModal}
+/>
+                  
                 </div>
               );
             })}

@@ -3,12 +3,15 @@ import { buildPsalmNodes } from "@/lib/home/build-psalm-nodes";
 import type { Profile, Psalm } from "@/lib/types/database"
 import type { HomeData } from "@/lib/types/home";
 
-function profileFromRow(row: Profile): HomeData["profile"] {
+function profileFromRow(
+  row: Profile,
+  battery: number
+): HomeData["profile"] {
   return {
-    displayName: row.display_name ?? "Viajante",
+    displayName: row.display_name ?? "Ovelha",
     streak: row.streak,
     gems: row.gems,
-    energy: row.energy,
+    energy: battery,
   };
 }
 
@@ -54,7 +57,17 @@ export async function fetchHomeData(
     user.email?.split("@")[0] ??
     "Viajante";
 
-  const profileRow = await ensureProfile(supabase, user.id, fallbackName);
+const profileRow = await ensureProfile(supabase, user.id, fallbackName);
+
+const { data: userStats, error: userStatsError } = await supabase
+  .from("user_stats")
+  .select("battery")
+  .eq("id", user.id)
+  .single();
+
+if (userStatsError) {
+  throw userStatsError;
+}
 
   const [psalmsResult, progressResult] = await Promise.all([
     supabase
@@ -129,7 +142,10 @@ export async function fetchHomeData(
 
 
   return {
-    profile: profileFromRow(profileRow),
+    profile: profileFromRow(
+      profileRow,
+      userStats.battery
+    ),
     psalms: buildPsalmNodes(psalms, progressWithSteps),
   };
 }

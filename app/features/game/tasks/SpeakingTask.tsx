@@ -21,11 +21,9 @@ export default function SpeakingTask({
 
   // Configurações do Salmo
   // 1. A frase dividida em palavras individuais para podermos pintar uma por uma
-  const targetPhrase =
-  task.verses?.text ?? "";
-
-  const targetWords =
-  targetPhrase.split(" ");
+  const targetPhrase = task.verses?.text ?? "";
+  const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
+  const targetWords = targetPhrase.split(" ");
 
  
 
@@ -217,12 +215,14 @@ export default function SpeakingTask({
         <div className="flex items-center gap-2 flex-1 mx-4">
           {/* Barra de progresso amarela */}
           <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden shadow-inner">
-            <div className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full w-[35%] rounded-full"></div>
+            <div className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full rounded-full transition-all duration-500"
+                 style={{width: `${progressPercent}%`,}} 
+            ></div>
           </div>
           
           {/* Ícone de raio/energia */}
           <div className="flex items-center gap-1 font-bold text-lg text-[#2D2D2D]">
-            <span className="text-[#FFC72C]">⚡</span> 8
+            <span className="text-[#FFC72C]">⚡</span> {task.battery}
           </div>
         </div>
       </div>

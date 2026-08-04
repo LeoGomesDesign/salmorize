@@ -23,7 +23,9 @@ export interface Task {
   variant: string;
 
   verses: {
+    id: number;
     text: string;
+    position: number;
   } | null;
 
   recap_verses: {
@@ -37,4 +39,9 @@ export interface Task {
     text: string;
     position: number;
   }[];
+
+  task_order: number;
+  stanza_total_tasks: number;
+  battery: number;
+  max_battery: number;
 }

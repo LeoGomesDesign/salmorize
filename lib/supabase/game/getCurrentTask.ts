@@ -31,6 +31,8 @@ export interface CurrentTask {
   text: string;
   position: number;
 }[];
+
+stanza_total_tasks: number;
 }
 
 
@@ -50,6 +52,7 @@ export async function getCurrentTask(
       global_order,
       recap,
       recap_verses,
+      stanza_id,
       psalm_id,
       battery_cost,
       star_reward,
@@ -72,6 +75,14 @@ export async function getCurrentTask(
       throw new Error("Task não encontrada.");
     }
 
+    const { count: stanzaTotalTasks, error: countError } = await supabase
+  .from("tasks")
+  .select("*", { count: "exact", head: true })
+  .eq("stanza_id", data.stanza_id);
+
+  if (countError) {
+  throw countError;
+  }
     
 
     let psalmVerses: CurrentTask["psalm_verses"] = [];
@@ -121,5 +132,6 @@ export async function getCurrentTask(
     ...data,
     recap_verses: recapVerses,
     psalm_verses: psalmVerses,
+    stanza_total_tasks: stanzaTotalTasks ?? 0,
   }
 };
