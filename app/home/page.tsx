@@ -200,21 +200,8 @@ export default function HomePage() {
                     zIndex: 10,
                   }}
                 >
-                  {/*<PsalmStep psalm={psalm} onOpenModal={handleOpenModal} />*/}
-                  <PsalmStep
-  psalm={{ ...psalm, status: "completed" }}
-  onOpenModal={handleOpenModal}
-/>
+                  <PsalmStep psalm={psalm} onOpenModal={handleOpenModal} />
 
-<PsalmStep
-  psalm={{ ...psalm, status: "active" }}
-  onOpenModal={handleOpenModal}
-/>
-
-<PsalmStep
-  psalm={{ ...psalm, status: "locked" }}
-  onOpenModal={handleOpenModal}
-/>
                   
                 </div>
               );
@@ -226,24 +213,37 @@ export default function HomePage() {
       {/* ── Barra CTA ───────────────────────────────────────────────────── */}
       <div className="px-4 pb-10 pt-3 shrink-0">
         <button
-          className="w-full rounded-2xl px-6 py-5 flex items-center justify-between active:scale-95 transition-transform"
-          style={{ backgroundColor: "#E8A920", boxShadow: "0 6px 0 #B07A10" }}
+        onClick={() => handleOpenModal(activePsalm)}
+          className="w-full rounded-3xl px-6 py-5 flex items-center justify-between active:scale-95 transition-transform"
+          style={{ background: "linear-gradient(90deg, #538A78 0%, #1E4639 100%)", boxShadow: "0 8px 0 #0F3F2F" }}
         >
           <div className="flex flex-col items-start gap-2">
-            <span className="text-stone-900 font-black text-xl tracking-widest">
-              {activePsalm.label.toUpperCase()}
+            <span className="text-gray-2 font-black font-domine text-xl text-left">
+              Salmo {activePsalm.number}
             </span>
+            <span className="text-gray-2 font-medium text-lg text-left">
+              {activePsalm.label}
+            </span>
+
+          {/*Progress bar*/}
             <div
-              className="rounded-full overflow-hidden"
-              style={{ width: 160, height: 10, backgroundColor: "rgba(0,0,0,0.15)" }}
+              className="rounded-full overflow-hidden w-full"
+              style={{ 
+                height: 10, 
+                backgroundColor: "rgba(255, 255, 255, 0.18)", 
+              }}
             >
+              
               <div
                 className="h-full rounded-full transition-all duration-700"
-                style={{ width: `${activePsalm.progress}%`, backgroundColor: "#22c55e" }}
+                style={{ 
+                 width: `${activePsalm.progress}%`,
+                 background: "linear-gradient(90deg, #279838 0%, #35DE4F 100%)",
+                 }}
               />
             </div>
           </div>
-          <span className="text-stone-900 font-black text-4xl tabular-nums">
+          <span className="text-gray-1 font-black text-4xl font-domine tabular-nums">
             {activePsalm.progress}
             <span className="text-2xl">%</span>
           </span>

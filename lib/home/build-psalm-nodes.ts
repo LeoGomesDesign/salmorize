@@ -71,39 +71,5 @@ console.log("NODES:", nodes);
 return nodes;
 //vai até aqui o teste
 
-  return psalms.map((psalm) => {
-    const row = progressByPsalmId.get(psalm.id);
-
-    if (isCompleted(row)) {
-      return {
-        id: psalm.id,
-        number: psalm.number,
-        label: psalm.title,
-        status: "completed",
-        progress: row.progress,
-        currentStep: row.total_steps,
-      };
-    }
-
-    if (!activeAssigned) {
-      activeAssigned = true;
-      return {
-        id: psalm.id,
-        number: psalm.number,
-        label: psalm.title,
-        status: "active",
-        progress: row.progress ?? 0,
-        currentStep: row.current_step ?? 1,
-      };
-    }
-
-    return {
-      id: psalm.id,
-      number: psalm.number,
-      label: psalm.title,
-      status: "locked",
-      progress: 0,
-      currentStep: 1,
-    };
-  });
+  
 }

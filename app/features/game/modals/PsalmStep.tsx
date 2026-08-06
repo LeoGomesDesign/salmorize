@@ -3,6 +3,7 @@
 
 import type { PsalmNode } from "@/lib/types/home";
 import HexButton from "./HexButton";
+import HexProgress from "./HexProgress";
 
 // ─── Layout da escada ─────────────────────────────────────────────────────────
 
@@ -70,41 +71,10 @@ export default function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; on
       Apenas o salmo atual possui o anel de progresso.
       ============================================================ */}
   {isActive && (
-    <svg
-      width={ringSize}
-      height={ringSize}
-      viewBox={`0 0 ${ringSize} ${ringSize}`}
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-      }}
-    >
-      <circle
-        cx={ringSize / 2}
-        cy={ringSize / 2}
-        r={radius}
-        fill="none"
-        stroke="#E5E5E5"
-        strokeWidth="8"
-      />
-
-      <circle
-        cx={ringSize / 2}
-        cy={ringSize / 2}
-        r={radius}
-        fill="none"
-        stroke="#22C55E"
-        strokeWidth="8"
-        strokeDasharray={circumference}
-        strokeDashoffset={dashOffset}
-        strokeLinecap="round"
-        style={{
-          transform: "rotate(-90deg)",
-          transformOrigin: "50% 50%",
-        }}
-      />
-    </svg>
+     <HexProgress
+      size={ringSize}
+      progress={psalm.progress}
+    />
   )}
 
   {/* ============================================================

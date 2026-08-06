@@ -40,7 +40,7 @@ return (
 
         {/* Título */}
         <div className="font-domine w-full">
-          <h2 className="text-white text-left font-black text-3xl mb-2">
+          <h2 className="text-white font-black text-3xl mb-2">
             Samo {psalm.number}
           </h2>
           <p className="text-blue-100 font-montserrat text-sm">
@@ -51,7 +51,7 @@ return (
         {/* Botão Continuar */} 
         <button
           onClick={() => onContinue(psalm)}
-          className="btn-secondary w-full cursor-pointer"
+          className="btn-secondary w-full text-center cursor-pointer flex justify-center items-center"
           >
           Continuar
         </button>

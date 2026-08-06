@@ -8,28 +8,23 @@ export async function importPsalm(
   psalm: ParsedPsalm
 ) {
   const supabase = createClient();
-  // Verifica se já existe um Salmo com esse número
-const { data: existingPsalm } = await supabase
+// ============================================================
+// Verifica se o Salmo já existe
+// ============================================================
+const { data: existingPsalm, error: existingError } = await supabase
   .from("psalms")
   .select("id")
   .eq("number", number)
   .maybeSingle();
 
+if (existingError) {
+  throw existingError;
+}  
+
 if (existingPsalm) {
-  console.log("Removendo Salmo existente...");
-
-  const { error: deleteError } = await supabase
-    .from("psalms")
-    .delete()
-    .eq("id", existingPsalm.id);
-
-  if (deleteError) {
-    console.error(deleteError);
-    throw deleteError;
-  }
-
-  console.log("Salmo removido.");
+  throw new Error("PSALM_ALREADY_EXISTS");
 }
+
   const { data: insertedPsalm, error: psalmError } = await supabase
   .from("psalms")
   .insert({

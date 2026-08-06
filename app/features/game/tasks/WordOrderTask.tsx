@@ -253,7 +253,7 @@ function DavidSpeechBubble({
         <button 
         onClick={() => window.history.back()}
         className="btn btn-secondary cursor-pointer w-max mb-4">
-          <span>&lt;</span> Voltar
+          X
         </button>
         
         <div className="flex items-center gap-2 flex-1 mx-4">
