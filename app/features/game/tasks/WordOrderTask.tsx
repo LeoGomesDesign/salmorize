@@ -6,6 +6,7 @@ import Image from 'next/image';
 import SuccessModal from '@/app/features/game/modals/SuccessModal';
 import FailureModal from '@/app/features/game/modals/FailureModal';
 import type { Task } from "@/lib/types/task";
+import DavidSpeechBubble from '../components/DavidSpeechBubble';
 
 
 
@@ -108,6 +109,13 @@ export default function WordOrderTask({
   const [showFailure, setShowFailure] = useState(false);
   const [audioUrl, setAudioUrl] = useState("");
 
+  const playAudio = () => {
+  if (!audioRef.current) return;
+
+  audioRef.current.currentTime = 0;
+  audioRef.current.play().catch(() => {});
+};
+
   useEffect(() => {
   setSelectedWords([]);
 
@@ -129,15 +137,10 @@ export default function WordOrderTask({
       return () => clearTimeout(t);
   }, []);
 
-useEffect(() => {
-  if (!audioUrl) return;
- const audioTimer = setTimeout(() => {
-  audioRef.current?.play().catch(() => {});
-  }, 200);
-
-  return () => clearTimeout(audioTimer);
-}, [audioUrl]); 
-    
+console.log("TASK:", task);
+console.log("VERSE ID:", task.verses?.id);
+console.log("VERSE TEXT:", task.verses?.text);  
+  
 useEffect(() => {
   if (!task.verses) return;
 
@@ -202,46 +205,7 @@ useEffect(() => {
   
 
 
-function DavidSpeechBubble({
-  visible,
-  audioRef,
-  onPlay,
-  audioUrl,
-}: {
-  visible: boolean;
-  audioRef: React.RefObject<HTMLAudioElement | null>;
-  onPlay: () => void;
-  audioUrl: string;
-}) {
-  return (
-    <div
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(12px)",
-        transition: "opacity 0.5s ease, transform 0.5s ease",
-        transitionDelay: visible ? "0.6s" : "0s",
-      }}
-      className="absolute -bottom-4.5 -right-20 z-1"
-    >
-      <button
-        type="button"
-        onClick={onPlay}
-        className="relative bg-white rounded-2xl px-4 py-2 shadow-lg flex items-center gap-1 cursor-pointer"
-      >
-        <span style={{ fontSize: 18 }}>🔊</span>
-        <span
-          className="text-xs font-medium"
-          style={{ color: "#6B6B6B", fontFamily: "var(--font-montserrat)" }}
-        >
-          Escutar novamente
-        </span>
-      </button>
 
-      {/*TODO: Receber áudio da task */}
-      <audio ref={audioRef} src={audioUrl} preload="auto" />
-    </div>
-  );
-}
 
 
   return (
@@ -292,15 +256,19 @@ function DavidSpeechBubble({
           {/* Speech bubble */}
           <DavidSpeechBubble
             visible={bubbleVisible}
-            audioRef={audioRef}
-            audioUrl={audioUrl}
-            onPlay={() => {
-              if (audioRef.current) {
-                audioRef.current.play().catch(() => {});
-              }
-            }}
+            onPlay={playAudio}
           />
+
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            preload="auto"
+            onCanPlayThrough={playAudio}
+          />
+
         </div>
+      
+      
 
         {/* 3. CAMPO DE RESPOSTA: Caixa com linhas tracejadas */}
         <div className="w-full bg-white/50  border border-gray-300 rounded-2xl p-6 min-h-[100px] flex flex-wrap gap-2 items-center justify-center mb-6">

@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import { useHomeData } from "@/lib/hooks/useHomeData";
 import { PSALM_TOTAL_STEPS, type PsalmNode } from "@/lib/types/home";
 import PsalmModal from "../features/game/modals/PsalmModal";
-import PsalmStep from "../features/game/modals/PsalmStep";
+import PsalmStep from "../features/game/components/PsalmStep";
 
 const STEP_HEIGHT = 120;
 const STEP_SIZE_ACT = 64;
