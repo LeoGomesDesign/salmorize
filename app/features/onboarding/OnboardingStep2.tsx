@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useOnboarding } from '@/app/context/OnboardingContext';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from "@/lib/supabase/client";
+import { getPsalmAudioUrl } from "@/lib/storage/getPsalmAudioUrl";
 
 
 
@@ -94,36 +95,49 @@ function PhraseField({ slots, answers }: { slots: WordSlot[]; answers: (string |
 function DavidSpeechBubble({
   visible,
   audioRef,
+  audioUrl,
   onPlay,
 }: {
   visible: boolean;
   audioRef: React.RefObject<HTMLAudioElement | null>;
+  audioUrl: string;
   onPlay: () => void;
 }) {
   return (
     <div
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(12px)",
+        left: "50%",
+        transform: visible ? "translate(-50%, 0)" : "translate(-50%, 4px)",
         transition: "opacity 0.5s ease, transform 0.5s ease",
         transitionDelay: visible ? "0.6s" : "0s",
       }}
-      className="absolute -bottom-4.5 -right-20 z-10"
-    >
+      className="absolute -bottom-4.5 z-10"
+      >
       <button
         type="button"
         onClick={onPlay}
-        className="relative bg-white rounded-2xl px-4 py-2 shadow-lg flex items-center gap-1"
+        className=" bg-white rounded-2xl px-6 py-2 shadow-lg flex items-center gap-1"
       >
         <span style={{ fontSize: 18 }}>🔊</span>
         <span
-          className="text-xs font-medium"
-          style={{ color: "#6B6B6B", fontFamily: "var(--font-montserrat)" }}
+          className="text-xs font-medium w-fit"
+          style={{ color: "#6B6B6B", fontFamily: "var(--font-montserrat)", whiteSpace: "nowrap" }}
         >
           Escutar novamente
         </span>
       </button>
-      <audio ref={audioRef} src="/audio/Salmo1Onboarding.mp3" preload="auto" />
+      <audio
+  ref={audioRef}
+  src={audioUrl}
+  preload="auto"
+  onLoadedData={() => console.log("Áudio carregado")}
+  onCanPlay={() => console.log("Áudio pronto para reproduzir")}
+  onCanPlayThrough={() => console.log("Áudio pode reproduzir inteiro")}
+  onError={(event) => {
+    console.error("Erro no elemento de áudio:", event.currentTarget.error);
+  }}
+/>
     </div>
   );
 }
@@ -467,6 +481,7 @@ function WordChip({
 export default function OnboardingStep2() {
   const { previousStep, nextStep, userProgress, completeStep } = useOnboarding();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioUrl, setAudioUrl] = useState("");
   const [bubbleVisible, setBubbleVisible] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
@@ -482,17 +497,32 @@ export default function OnboardingStep2() {
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    const audioTimer = setTimeout(() => {
-      if (audioRef.current) {
-        audioRef.current.play().catch(() => {
-          // autoplay may be blocked until user interaction
-        });
-      }
-    }, 200);
+useEffect(() => {
+  if (!audioUrl) return;
 
-    return () => clearTimeout(audioTimer);
-  }, []);
+  const audioTimer = setTimeout(() => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(() => {
+        // autoplay may be blocked until user interaction
+      });
+    }
+  }, 200);
+
+  return () => clearTimeout(audioTimer);
+}, [audioUrl]);
+
+ useEffect(() => {
+  async function loadAudio() {
+    const url = await getPsalmAudioUrl(1, "psalm_title");
+
+    if (url) {
+      setAudioUrl(url);
+    }
+  }
+
+  loadAudio();
+}, []); 
+
 
   const blanks = PHRASE_SLOTS.filter((s) => s.isBlank);
   const correctWords = blanks.map((s) => s.word); // ["do", "Homem"]
@@ -600,8 +630,8 @@ export default function OnboardingStep2() {
       </div>
  
       {/* ── David + Bubble ── */}
-      <div className="px-6 pt-4 pb-6">
-        <div className="relative" style={{ width: 200 }}>
+      <div className="pt-4 pb-6">
+        <div className="relative mx-auto" style={{ width: 200 }}>
           {/* David illustration placeholder */}
           <Image
             src="/img/DaviSpeaking.png"
@@ -614,13 +644,17 @@ export default function OnboardingStep2() {
           <DavidSpeechBubble
             visible={bubbleVisible}
             audioRef={audioRef}
+            audioUrl={audioUrl}
             onPlay={() => {
-              if (audioRef.current) {
-                audioRef.current.play().catch(() => {
+              const audio = audioRef.current;
+              if (!audio) return;
+              audio.currentTime = 0;
+                audio.play().catch((error) => {
+                  console.error("Erro ao reproduzir áudio:", error);
                   // browser may block play until interaction
                 });
-              }
-            }}
+              }}
+            
           />
         </div>
       </div>

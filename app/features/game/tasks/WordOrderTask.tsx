@@ -144,11 +144,15 @@ console.log("VERSE TEXT:", task.verses?.text);
 useEffect(() => {
   if (!task.verses) return;
 
-  const url = getVerseAudioUrl(task.verses.id);
+  async function loadAudio() {
+  const url = await getVerseAudioUrl(task.verses!.id);
 
-  console.log(url);
-  setAudioUrl(url);
-}, [task.id]);
+  console.log("Áudio do verso:",url);
+  setAudioUrl(url ?? "");
+}
+
+ loadAudio();
+},[task.id, task.verses]);
  
 
   // Configuração de sensores para detectar mouse, touch (celular) e teclado
