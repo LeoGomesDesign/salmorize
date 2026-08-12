@@ -37,7 +37,8 @@ export default function GameDevPage() {
 
       const result = await completeTask(
         progressData.id,
-        progressData.current_task_id
+        progressData.current_task_id,
+        progressData.user_id
         );
 
         console.log(result);
@@ -50,10 +51,11 @@ export default function GameDevPage() {
   }
 
   async function handleCompleteTask() {
-    if (!progressId || !task) return;
+    if (!progressId || !task || !progress) return;
     await completeTask(
     progressId,
-    task.id
+    task.id,
+    progress.user_id
     );
 
     const updatedProgress = await getUserProgress(1);

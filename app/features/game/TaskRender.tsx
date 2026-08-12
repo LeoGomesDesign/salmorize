@@ -1,13 +1,13 @@
 import type { Task } from "@/lib/types/task";
 
 import WordOrderTask from "./tasks/WordOrderTask";
-import TypingTask from "./tasks/TypingTask";
+
 import SpeakingTask from "./tasks/SpeakingTask";
 import RecapTask from "./tasks/RecapTask";
 
 type TaskRendererProps = {
   task: Task;
-  onCompleted: () => void;
+  onCompleted: () => Promise<void>;
 };
 
 export default function TaskRenderer({
@@ -24,13 +24,7 @@ export default function TaskRenderer({
     />
   );
 
-  case "typing":
-    return (
-    <TypingTask  
-     task={task}
-     onCompleted={onCompleted}
-    />
-  );
+  
 
   case "speaking":
     return (

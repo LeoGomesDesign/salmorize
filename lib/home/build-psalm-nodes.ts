@@ -39,8 +39,8 @@ export function buildPsalmNodes(
       number: psalm.number,
       label: psalm.title,
       status: "completed" as const,
-      progress: row.progress,
-      currentStep: row.total_steps,
+      progress: row?.progress ?? 0,
+      currentStep: row?.total_steps ?? 1,
     };
   }
 

@@ -2,15 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 import { getUserProgress } from "@/lib/supabase/game/getUserProgress";
-import { getCurrentTask } from "@/lib/supabase/game/getCurrentTask";
+import {
+  getCurrentTask,
+  type CurrentTask,
+} from "@/lib/supabase/game/getCurrentTask";
+
 import TaskRender from "./TaskRender";
-import type { Task } from "@/lib/types/task";
 import { completeTask } from "@/lib/supabase/game/completeTask";
 
 type GamePlayerProps = {
   psalmNumber: number;
 };
+
 type UserProgress = {
   id: number;
   user_id: string;
@@ -23,15 +28,18 @@ type UserProgress = {
 
   battery: number;
   max_battery: number;
-}; 
+};
 
 export default function GamePlayer({
   psalmNumber,
 }: GamePlayerProps) {
-    const router = useRouter();
-    const [progress, setProgress] =
+  const router = useRouter();
+
+  const [progress, setProgress] =
     useState<UserProgress | null>(null);
-    const [task, setTask] = useState<Task | null>(null);
+
+  const [task, setTask] =
+    useState<CurrentTask | null>(null);
 
     useEffect(() => {
         async function load() {

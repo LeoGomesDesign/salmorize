@@ -103,8 +103,7 @@ export default function WordOrderTask({
 
   // A frase correta para referência
   const correctSentence = task.verses?.text ?? "";
-  const progressPercent =
-  (task.global_order / task.psalm_total_tasks) * 100;
+  const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
 
    // 1. ESTADO: Palavras que aparecem na caixa de resposta (começa vazia)
   const [selectedWords, setSelectedWords] = useState<WordItem[]>([]);

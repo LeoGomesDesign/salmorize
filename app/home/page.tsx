@@ -5,6 +5,7 @@ import { useHomeData } from "@/lib/hooks/useHomeData";
 
 import PsalmModal from "../features/game/modals/PsalmModal";
 import PsalmStep from "../features/game/components/PsalmStep";
+import type { HomeData } from "@/lib/types/home";
 
 const STEP_HEIGHT = 120;
 const STEP_SIZE_ACT = 64;
@@ -25,23 +26,28 @@ const getX = (index: number) =>
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function HomePage() {
   const { loading, error, profile, psalms, refetch } = useHomeData();
-  console.log("PSALMS:", psalms);
-  const [selectedPsalm, setSelectedPsalm] = useState<PsalmNode | null>(null);
+  
+  const [selectedPsalm, setSelectedPsalm] =
+  useState<HomeData["psalms"][number] | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const activePsalm = psalms.find((p) => p.status === "active") ?? psalms[0];
 
-  const handleOpenModal = (psalm: PsalmNode) => {
+  const handleOpenModal = (
+    psalm: HomeData["psalms"][number]
+    ) => {
     setSelectedPsalm(psalm);
   };
 
-  const handleContinue = (psalm: PsalmNode) => {
-    if (energy <= 0) {
-      alert("Você está sem energia.");
-      return;
-    }
+  const handleContinue = (
+    psalm: HomeData["psalms"][number]
+    ) => {
+  if (energy <= 0) {
+    alert("Você está sem energia.");
+    return;
+  }
 
-    window.location.href = `/lesson/${psalm.number}`;
+  window.location.href = `/lesson/${psalm.number}`;
   };
 
   const handleCloseModal = () => {

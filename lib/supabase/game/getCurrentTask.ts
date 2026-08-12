@@ -137,9 +137,13 @@ if (psalmCountError) {
       recapVerses = verses ?? [];
     }
 
+  const verse = Array.isArray(data.verses)
+  ? data.verses[0] ?? null
+  : data.verses ?? null;
 
   return {
     ...data,
+    verses: verse,
     recap_verses: recapVerses,
     psalm_verses: psalmVerses,
     stanza_total_tasks: stanzaTotalTasks ?? 0,

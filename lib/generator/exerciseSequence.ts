@@ -1,7 +1,7 @@
 import { TaskType } from "@/lib/types/task";
 
 const EXERCISE_TYPES: TaskType[] = [
-  "typing",
+  "recap",
   "speaking",
   "word_order",
 ];
