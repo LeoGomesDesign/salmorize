@@ -20,7 +20,7 @@ export default function OnboardingStep1() {
           width={400}
           height={520}
           priority
-          className="mx-auto mb-8 rounded-lg"
+          className="mx-auto mb-2 rounded-lg"
         />
 
         <div className="space-y-3 mb-10 text-center px-6">
