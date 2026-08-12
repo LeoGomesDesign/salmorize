@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useRef, useState } from 'react';
+
 import SuccessModal from '@/app/features/game/modals/SuccessModal';
 import FailureModal from '@/app/features/game/modals/FailureModal';
+import { TaskCompleteSheet } from '@/app/features/game/modals/CompleteTaskModal';
 import type { Task } from "@/lib/types/task";
 
 type RecapRound = {
@@ -89,7 +90,7 @@ export default function RecapTask({
   task,
   onCompleted,
 }: RecapTaskProps) {
-  
+
   const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
   // 1. ESTADO CENTRAL: Controla em qual rodada do exercício o usuário está (0 ou 1)
   const [currentRound, setCurrentRound] = useState(0);
@@ -97,6 +98,8 @@ export default function RecapTask({
   // Estados para controlar os modais finais do sistema
   const [showSuccess, setShowSuccess] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
+  const [showComplete, setShowComplete] = useState(false);
+  const roundsContainerRef = useRef<HTMLDivElement | null>(null);
 
   // 2. BANCO DE DADOS DAS FRASES: Organizado em rodadas (Rounds)
   const roundsData = buildRecapRounds(task);
@@ -129,9 +132,16 @@ export default function RecapTask({
           // Se acertou a rodada 1, muda o número da rodada para ativar o próximo bloco
           setCurrentRound(prev => prev + 1);
         } else {
-          // Se acertou a rodada 2, abre o modal de sucesso final
-          setShowSuccess(true);
-        }
+    // Última rodada do Recap
+  const isLastTaskOfStanza =
+    task.task_order === task.stanza_total_tasks;
+
+  if (isLastTaskOfStanza) {
+    setShowComplete(true);
+  } else {
+    setShowSuccess(true);
+  }
+}
       }, 500);
     } else {
       // Se errar em qualquer uma das etapas, dispara o modal de falha na hora
@@ -140,129 +150,151 @@ export default function RecapTask({
       }, 300);
     }
   };
+ 
+  useEffect(() => {
+    if (!roundsContainerRef.current || currentRound < 2) return;
 
+    const roundElements = roundsContainerRef.current.querySelectorAll('[data-round-index]');
+    const targetIndex = currentRound - 1;
+    const targetElement = roundElements[targetIndex] as HTMLElement | undefined;
 
+    if (!targetElement) return;
+
+    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [currentRound]);
 
   return (
-    <div className="h-screen overflow-hidden bg-[#FDF6EC] text-[#2D2D2D] font-sans p-4 flex flex-col justify-between max-w-md mx-auto relative border border-gray-200 shadow-lg rounded-3xl">
-      
-      {/* 1. TOPO: Botão Fechar e Barra de Progresso */}
-      <div className="flex flex-col gap-4 w-full pt-4">
-        <div className="flex items-center justify-between w-full">
-          <button 
-            onClick={() => window.history.back()}
-            className="flex items-center gap-1 bg-white px-4 py-1.5 rounded-xl border border-gray-200 text-sm font-semibold shadow-sm hover:bg-gray-50 text-gray-700"
-          >
-            ✕ Fechar
-          </button>
-          <div className="flex items-center gap-1 font-bold text-lg text-[#2D2D2D]">
-            <span className="text-[#FFC72C]">⚡</span> {task.battery}
+    <div className="h-screen overflow-hidden bg-[#FDF6EC] text-[#2D2D2D] font-sans">
+      <div className="mx-auto max-w-md h-full flex flex-col p-4">
+        <div className="flex flex-col gap-4 w-full">
+          <div className="flex items-center justify-between w-full">
+            <button 
+              onClick={() => window.history.back()}
+              className="flex items-center gap-1 bg-white px-4 py-1.5 rounded-xl border border-gray-200 text-sm font-semibold shadow-sm hover:bg-gray-50 text-gray-700"
+            >
+              ✕ Fechar
+            </button>
+            <div className="flex items-center gap-1 font-bold text-lg text-[#2D2D2D]">
+              <span className="text-[#FFC72C]">⚡</span> {task.battery}
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden shadow-inner">
+            <div
+              className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full rounded-full transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
         </div>
-        <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden shadow-inner">
-          {/* Progresso dinâmico com base na rodada atual */}
+
+        <div className="flex-1 flex flex-col mt-6 overflow-hidden">
+          <h1 className="text-2xl font-serif font-bold text-left mb-2">
+            Continue o Salmo:
+          </h1>
+
           <div
-            className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full rounded-full transition-all duration-500"
-            style={{
-            width: `${progressPercent}%`,}}
-          />
+            ref={roundsContainerRef}
+            className="flex-1 overflow-y-auto pr-1 space-y-4"
+            style={{ scrollPaddingTop: 8 }}
+          >
+            {roundsData.map((round, index) => {
+              if (index > currentRound) return null;
+
+              return (
+                <div
+                  key={index}
+                  data-round-index={index}
+                  className="flex flex-col gap-2.5 transition-all duration-300"
+                >
+                  <div className="flex items-center gap-3">
+                    <img
+                      src="/img/david_Recap.png"
+                      alt="Rei Davi"
+                      className="w-18 h-18 rounded-full border border-gray-200 object-cover shadow-sm"
+                    />
+
+                    <div className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-sm text-sm font-medium">
+                      {round.basePhrase}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 justify-end pr-1">
+                    <div className="w-56 h-10 bg-[#F2F2F2] border border-gray-300 rounded-xl flex items-center justify-center shadow-inner text-sm font-medium text-gray-800 px-3">
+                      {answers[index] || ""}
+                    </div>
+
+                    <img
+                      src="/img/ovelha_Recap.png"
+                      alt="Ovelhinha"
+                      className="w-18 h-18 rounded-full object-cover"
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-        {/* 2. CONTEÚDO CENTRAL: Histórico de Diálogos acumulados */}
-  <div className="flex flex-col flex-1 mt-6 px-2 overflow-hidden gap-y-4">
-    <h1 className="text-2xl font-serif font-bold text-left mb-2">
-      Continue o Salmo:
-    </h1>
+        <div className="flex-none flex flex-col gap-3 pb-6 w-full px-2">
+          <p className="text-base font-serif text-gray-800 font-medium mb-1">
+            Qual a sequencia correta?
+          </p>
 
-    {roundsData.map((round, index) => {
-  if (index > currentRound) return null;
+          {activeRound.alternatives.map((option, index) => (
+            <button
+              key={index}
+              onClick={() => handleSelectOption(option)}
+              className="w-full bg-[#FFEAD2] border-2 border-b-4 border-[#F5CBA7] active:border-b-2 active:mt-0.5 py-3.5 rounded-2xl text-lg font-bold text-black shadow-sm transition-all hover:bg-[#FDD7B2] text-center tracking-wide"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
 
-  return (
-    <div
-      key={index}
-      className="flex flex-col gap-2.5 transition-all duration-300"
-    >
-      <div className="flex items-center gap-3">
-        <img
-          src="https://placeholder.com"
-          alt="Rei Davi"
-          className="w-11 h-11 rounded-full border border-gray-200 object-cover shadow-sm"
+        <SuccessModal
+          visible={showSuccess}
+          onContinue={async () => {
+            setShowSuccess(false);
+            await onCompleted();
+          }}
         />
 
-        <div className="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-sm text-sm font-medium">
-          {round.basePhrase}
-        </div>
-      </div>
+        <FailureModal
+          visible={showFailure}
+          onRetry={() => {
+            setShowFailure(false);
+            setAnswers((prevAnswers) => {
+              const nextAnswers = [...prevAnswers];
+              nextAnswers[currentRound] = null;
+              return nextAnswers;
+            });
+          }}
+        />
 
-      <div className="flex items-center gap-3 justify-end pr-1">
-        <div className="w-56 h-10 bg-[#F2F2F2] border border-gray-300 rounded-xl flex items-center justify-center shadow-inner text-sm font-medium text-gray-800 px-3">
-          {answers[index] || ""}
-        </div>
+        {showComplete ? (
+          <div className="fixed inset-0 z-40 pointer-events-none">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundColor: 'rgba(34, 34, 34, 0.8)',
+                backdropFilter: 'blur(8px)',
+              }}
+            />
+          </div>
+        ) : null}
 
-        <img
-          src="https://placeholder.com"
-          alt="Ovelhinha"
-          className="w-11 h-11 rounded-full object-cover"
+        <TaskCompleteSheet
+          isOpen={showComplete}
+          onContinue={async () => {
+            setShowComplete(false);
+            await onCompleted();
+          }}
+          points={12}
+          accuracy={100}
+          timeLabel="0:45"
         />
       </div>
     </div>
   );
-})}
-  </div>
-
-
-
-      {/* 3. PAINÉL INFERIOR: Texto dinâmico e botões de opções que mudam de acordo com a rodada */}
-      <div className="flex flex-col gap-3 pb-6 w-full px-2">
-        <p className="text-base font-serif text-gray-800 font-medium mb-1">
-          Qual a sequencia correta?
-        </p>
-
-        {/* Renderiza dinamicamente as alternativas da rodada ativa */}
-        {activeRound.alternatives.map((option, index) => (
-          <button
-            key={index}
-            onClick={() => handleSelectOption(option)}
-            className="w-full bg-[#FFEAD2] border-2 border-b-4 border-[#F5CBA7] active:border-b-2 active:mt-[2px] py-3.5 rounded-2xl text-lg font-bold text-black shadow-sm transition-all hover:bg-[#FDD7B2] text-center tracking-wide"
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-
-      {/* Integração nativa com os Modais de Sucesso e Falha do seu sistema */}
-    
-
- 
-
-      
-     {/* MODAIS DE FEEDBACK (Ficam aqui embaixo para renderizar por cima da tela) */}
-      <SuccessModal
-        visible={showSuccess}
-        onContinue={async () => {
-          setShowSuccess(false);
-          await onCompleted();
-          
-          // OU se quiser abrir o modal de recompensa primeiro, como no seu exemplo:
-          // setShowRewardModal(true);
-        }}
-      />
-   
-      <FailureModal
-        visible={showFailure}
-        onRetry={() => {
-          setShowFailure(false);
-          // Opcional: Limpar as palavras para o usuário tentar do zero se quiser
-          // setSelectedWords([]);
-          // setAvailableWords(['Feliz', 'não', 'aquele', 'todo', 'é', 'que', 'anda']);
-        }}
-      />
-      
-      {/* Se for usar o RewardModal, adicione ele aqui também da mesma forma */}
-    </div>
-    
- )  
 }
 
     

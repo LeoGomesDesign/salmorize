@@ -124,12 +124,18 @@ if (userStatsError) {
     const totalSteps = stanzas.length;
 
     const currentStep =
-      stanzas.findIndex(
-        (stanza) => stanza.id === task.stanza_id
-      ) + 1;
+  stanzas.findIndex(
+    (stanza) => stanza.id === task.stanza_id
+  ) + 1;
 
-    const progress =
-      Math.round((currentStep / totalSteps) * 100);
+const completedSteps = row.completed
+  ? totalSteps
+  : currentStep - 1;
+
+const progress =
+  totalSteps > 0
+    ? Math.round((completedSteps / totalSteps) * 100)
+    : 0;
 
     return {
       ...row,

@@ -80,12 +80,6 @@ export default function GamePlayer({
 
   return (
     <main>
-      <h1>Game Player</h1>
-
-      <pre>
-        {JSON.stringify(progress, null, 2)}
-      </pre>
-
       <TaskRender 
        task={{
         ...task,

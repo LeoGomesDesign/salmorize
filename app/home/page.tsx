@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useHomeData } from "@/lib/hooks/useHomeData";
-import { PSALM_TOTAL_STEPS, type PsalmNode } from "@/lib/types/home";
+
 import PsalmModal from "../features/game/modals/PsalmModal";
 import PsalmStep from "../features/game/components/PsalmStep";
 
@@ -263,24 +263,8 @@ export default function HomePage() {
 // ─── Avatar da ovelha ────────────────────────────────────────────────────────
 function SheepAvatar() {
   return (
-    <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-      <circle cx="26" cy="23" r="16" fill="#F0EDE8" />
-      <circle cx="14" cy="20" r="8"  fill="#F0EDE8" />
-      <circle cx="38" cy="20" r="8"  fill="#F0EDE8" />
-      <circle cx="20" cy="14" r="7"  fill="#F0EDE8" />
-      <circle cx="32" cy="14" r="7"  fill="#F0EDE8" />
-      <circle cx="26" cy="12" r="6"  fill="#F0EDE8" />
-      <ellipse cx="26" cy="30" rx="11" ry="10" fill="#D8C9B0" />
-      <circle cx="22" cy="28" r="2.2" fill="#2A1A0A" />
-      <circle cx="30" cy="28" r="2.2" fill="#2A1A0A" />
-      <circle cx="22.8" cy="27.2" r="0.8" fill="white" />
-      <circle cx="30.8" cy="27.2" r="0.8" fill="white" />
-      <ellipse cx="26" cy="32" rx="3" ry="2" fill="#C4A882" />
-      <path d="M23 34.5 Q26 37 29 34.5" stroke="#8B6040" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
-      <path d="M15 38 Q26 42 37 38 Q37 44 26 44 Q15 44 15 38Z" fill="#2B5FA6" />
-      <path d="M15 38 Q26 41 37 38" stroke="#1E4A8A" strokeWidth="1" fill="none"/>
-      <circle cx="26" cy="44" r="3.5" fill="#C9A227" />
-      <circle cx="26" cy="44" r="2"   fill="#E8C040" />
-    </svg>
+    <img 
+    src="/img/ovelha_Recap.png"
+    alt="Avatar da ovelha" />
   );
 }

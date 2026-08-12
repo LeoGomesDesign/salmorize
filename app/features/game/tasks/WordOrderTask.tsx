@@ -34,38 +34,42 @@ import { CSS } from '@dnd-kit/utilities';
 
 // --- COMPONENTE AUXILIAR PARA A PALAVRA ARRASTÁVEL ---
 // Criamos este pequeno bloco para dar o poder de "drag" para cada palavra individualmente
-function SortableWord({ word, onRemove }: { word: string; onRemove: () => void }) {
+function SortableWord({
+  item,
+  onRemove,
+}: {
+  item: WordItem;
+  onRemove: () => void;
+}) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-    isDragging
-  } = useSortable({ id: word });
+    isDragging,
+  } = useSortable({ id: item.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    // Deixa o elemento meio transparente enquanto ele é arrastado para dar um efeito bonito
-    opacity: isDragging ? 0.5 : 1, 
+    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      // listeners e attributes dão os superpoderes de clique/arraste pelo mouse ou touch
       {...listeners}
       {...attributes}
       className="bg-white border-2 border-b-4 border-gray-200 active:border-b-2 active:mt-[2px] px-4 py-2 rounded-xl font-medium shadow-sm cursor-grab active:cursor-grabbing hover:bg-gray-50 flex items-center gap-2 select-none"
     >
-      <span>{word}</span>
-      {/* Um pequeno botão 'x' discreto caso o usuário queira devolver a palavra clicando rápido */}
-      <button 
+      <span>{item.word}</span>
+
+      <button
         type="button"
         onClick={(e) => {
-          e.stopPropagation(); // Impede que o clique ative o arrastar por acidente
+          e.stopPropagation();
           onRemove();
         }}
         className="text-xs text-gray-400 hover:text-red-500 font-bold ml-1"
@@ -85,6 +89,11 @@ type WordOrderTaskProps = {
   onCompleted: () => Promise<void>;
 };
 
+type WordItem = {
+  id: string;
+  word: string;
+};
+
 export default function WordOrderTask({
   task,
   onCompleted,
@@ -94,14 +103,15 @@ export default function WordOrderTask({
 
   // A frase correta para referência
   const correctSentence = task.verses?.text ?? "";
-  const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
+  const progressPercent =
+  (task.global_order / task.psalm_total_tasks) * 100;
 
    // 1. ESTADO: Palavras que aparecem na caixa de resposta (começa vazia)
-  const [selectedWords, setSelectedWords] = useState<string[]>([]);
+  const [selectedWords, setSelectedWords] = useState<WordItem[]>([]);
 
    // 2. ESTADO: Palavras disponíveis para clicar (embaralhadas ou na ordem inicial)
  
-  const [availableWords, setAvailableWords] = useState<string[]>([]);
+  const [availableWords, setAvailableWords] = useState<WordItem[]>([]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [bubbleVisible, setBubbleVisible] = useState(false);
@@ -109,11 +119,25 @@ export default function WordOrderTask({
   const [showFailure, setShowFailure] = useState(false);
   const [audioUrl, setAudioUrl] = useState("");
 
-  const playAudio = () => {
-  if (!audioRef.current) return;
+const playAudio = async () => {
+  const audio = audioRef.current;
 
-  audioRef.current.currentTime = 0;
-  audioRef.current.play().catch(() => {});
+  if (!audio || !audioUrl) {
+    console.warn("Áudio ainda não está disponível.");
+    return;
+  }
+
+  try {
+    audio.currentTime = 0;
+    await audio.play();
+
+    console.log("WORD ORDER - áudio reproduzido novamente");
+  } catch (error) {
+    console.error(
+      "WORD ORDER - erro ao reproduzir áudio:",
+      error
+    );
+  }
 };
 
   useEffect(() => {
@@ -124,11 +148,14 @@ export default function WordOrderTask({
     return;
   }
 
-  const shuffled = [...correctSentence.split(" ")].sort(
-    () => Math.random() - 0.5
-  );
+const words = correctSentence.split(" ").map((word, index) => ({
+  id: `word-${index}`,
+  word,
+}));
 
-  setAvailableWords(shuffled);
+const shuffled = [...words].sort(() => Math.random() - 0.5);
+
+setAvailableWords(shuffled);
 
 }, [task.id]);
 
@@ -137,22 +164,82 @@ export default function WordOrderTask({
       return () => clearTimeout(t);
   }, []);
 
-console.log("TASK:", task);
-console.log("VERSE ID:", task.verses?.id);
-console.log("VERSE TEXT:", task.verses?.text);  
+
   
 useEffect(() => {
-  if (!task.verses) return;
+  if (!task.verses?.id) {
+    console.warn("WordOrderTask: verso sem ID.");
+    setAudioUrl("");
+    return;
+  }
+
+  let cancelled = false;
 
   async function loadAudio() {
-  const url = await getVerseAudioUrl(task.verses!.id);
+    const verseId = task.verses!.id;
 
-  console.log("Áudio do verso:",url);
-  setAudioUrl(url ?? "");
-}
+    console.log("WORD ORDER - carregando áudio");
+    console.log("Verse ID:", verseId);
 
- loadAudio();
-},[task.id, task.verses]);
+    const url = await getVerseAudioUrl(verseId);
+
+    if (cancelled) return;
+
+    console.log("Áudio encontrado:", url);
+
+    setAudioUrl(url ?? "");
+
+    if (!url) {
+      console.warn(
+        `Nenhum áudio encontrado para o verso ${verseId}.`
+      );
+    }
+  }
+
+  loadAudio();
+
+  return () => {
+    cancelled = true;
+  };
+}, [task.verses?.id]);
+
+useEffect(() => {
+  const audio = audioRef.current;
+
+  if (!audio || !audioUrl) return;
+
+  console.log("WORD ORDER - preparando autoplay");
+  console.log("URL:", audioUrl);
+
+  audio.src = audioUrl;
+  audio.load();
+
+  const playWhenReady = async () => {
+    try {
+      audio.currentTime = 0;
+      await audio.play();
+
+      console.log("WORD ORDER - autoplay iniciado");
+    } catch (error) {
+      console.warn(
+        "WORD ORDER - autoplay bloqueado pelo navegador.",
+        error
+      );
+    }
+  };
+
+  if (audio.readyState >= 3) {
+    playWhenReady();
+  } else {
+    audio.addEventListener("canplay", playWhenReady, {
+      once: true,
+    });
+  }
+
+  return () => {
+    audio.removeEventListener("canplay", playWhenReady);
+  };
+}, [audioUrl]);
  
 
   // Configuração de sensores para detectar mouse, touch (celular) e teclado
@@ -162,33 +249,41 @@ useEffect(() => {
   );
 
  // Função executada ao clicar em uma palavra disponível
-  const handleSelectedWord = (word: string) => {
-    // Adiciona a palavra clicada ao array de palavras selecionadas
-    setSelectedWords([...selectedWords, word]);
-    // Remove a palavra clicada do array de palavras disponíveis
-    setAvailableWords(availableWords.filter(w => w !== word));
-  };
+ const handleSelectedWord = (item: WordItem) => {
+  setSelectedWords((prev) => [...prev, item]);
+
+  setAvailableWords((prev) =>
+    prev.filter((word) => word.id !== item.id)
+  );
+};
 
   // Função executada ao clicar em uma palavra já selecionada (para remover)
-  const handleRemoveWord = (word: string) => {
-    // Remove a palavra clicada do array de palavras selecionadas
-    setSelectedWords(selectedWords.filter(w => w !== word));
-    // Adiciona a palavra clicada de volta ao array de palavras disponíveis
-    setAvailableWords([...availableWords, word]);
-  };
+const handleRemoveWord = (item: WordItem) => {
+  setSelectedWords((prev) =>
+    prev.filter((word) => word.id !== item.id)
+  );
+
+  setAvailableWords((prev) => [...prev, item]);
+};
 
   // Função que organiza a nova ordem da lista quando o usuário solta o arrasto
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+const handleDragEnd = (event: DragEndEvent) => {
+  const { active, over } = event;
 
-    if (over && active.id !== over.id) {
-      setSelectedWords((items) => {
-        const oldIndex = items.indexOf(active.id as string);
-        const newIndex = items.indexOf(over.id as string);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-    }
-  };
+  if (!over || active.id === over.id) return;
+
+  setSelectedWords((items) => {
+    const oldIndex = items.findIndex(
+      (item) => item.id === active.id
+    );
+
+    const newIndex = items.findIndex(
+      (item) => item.id === over.id
+    );
+
+    return arrayMove(items, oldIndex, newIndex);
+  });
+};
   
 
   //O botão ''Verificar'' fica ativo ao selecionar uma palavra
@@ -198,7 +293,9 @@ useEffect(() => {
   const handleVerify = () => {
     if (!isButtonActive) return; // Evita verificar se não há palavras selecionadas
 
-    const userSentence = selectedWords.join(' ');
+    const userSentence = selectedWords
+    .map((item) => item.word)
+    .join(' ');
     
     if (userSentence === correctSentence) {
       setShowSuccess(true);
@@ -246,7 +343,7 @@ useEffect(() => {
         </h1>
 
         {/* Bloco da Imagem e Botão de Áudio */}
-        <div className="relative w-48 h-56 flex justify-center mb-4">
+        <div className="relative w-auto h-56 flex justify-center mb-4">
           {/* Substitua o 'src' pela imagem real do Rei Davi quando tiver */}
           <Image
             src="/img/DaviSpeaking.png" 
@@ -264,11 +361,22 @@ useEffect(() => {
           />
 
           <audio
-            ref={audioRef}
-            src={audioUrl}
-            preload="auto"
-            onCanPlayThrough={playAudio}
-          />
+  ref={audioRef}
+  src={audioUrl || undefined}
+  preload="auto"
+  onLoadedData={() => {
+    console.log("WORD ORDER - áudio carregado");
+  }}
+  onCanPlay={() => {
+    console.log("WORD ORDER - áudio pronto para reproduzir");
+  }}
+  onError={(event) => {
+    console.error(
+      "WORD ORDER - erro no elemento de áudio:",
+      event.currentTarget.error
+    );
+  }}
+/>
 
         </div>
       
@@ -289,15 +397,15 @@ useEffect(() => {
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={selectedWords}
+                items={selectedWords.map((item) => item.id)}
                 strategy={horizontalListSortingStrategy}
               >
                 <div className="flex flex-wrap gap-2 justify-center w-full">
-                  {selectedWords.map((word) => (
+                  {selectedWords.map((item) => (
                     <SortableWord 
-                      key={word} 
-                      word={word} 
-                      onRemove={() => handleRemoveWord(word)} 
+                      key={item.id} 
+                      item={item} 
+                      onRemove={() => handleRemoveWord(item)} 
                     />
                   ))}
                 </div>
@@ -310,13 +418,13 @@ useEffect(() => {
         <div className="w-full  mb-4">
           <p className="text-sm text-gray-600 mb-3 font-domine">Selecione as palavras na ordem correta:</p>
           <div className="flex flex-wrap justify-center gap-2">
-            {availableWords.map((word, index) => (
+            {availableWords.map((item) => (
               <button
-                key={word}
-                onClick={() => handleSelectedWord(word)}
+                key={item.id}
+                onClick={() => handleSelectedWord(item)}
                 className="bg-white border-2 border-b-4 border-gray-200 active:border-b-2 active:mt-[2px] px-4 py-2 rounded-xl text-lg font-medium shadow-sm hover:bg-gray-50"
               >
-                {word}
+                {item.word}
               </button>
             ))}
           </div>

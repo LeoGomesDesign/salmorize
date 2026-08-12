@@ -33,6 +33,7 @@ export interface CurrentTask {
 }[];
 
 stanza_total_tasks: number;
+psalm_total_tasks: number;
 }
 
 
@@ -75,7 +76,7 @@ export async function getCurrentTask(
       throw new Error("Task não encontrada.");
     }
 
-    const { count: stanzaTotalTasks, error: countError } = await supabase
+  const { count: stanzaTotalTasks, error: countError } = await supabase
   .from("tasks")
   .select("*", { count: "exact", head: true })
   .eq("stanza_id", data.stanza_id);
@@ -83,6 +84,15 @@ export async function getCurrentTask(
   if (countError) {
   throw countError;
   }
+
+  const { count: psalmTotalTasks, error: psalmCountError } = await supabase
+  .from("tasks")
+  .select("*", { count: "exact", head: true })
+  .eq("psalm_id", data.psalm_id);
+
+if (psalmCountError) {
+  throw psalmCountError;
+}
     
 
     let psalmVerses: CurrentTask["psalm_verses"] = [];
@@ -133,5 +143,6 @@ export async function getCurrentTask(
     recap_verses: recapVerses,
     psalm_verses: psalmVerses,
     stanza_total_tasks: stanzaTotalTasks ?? 0,
+    psalm_total_tasks: psalmTotalTasks ?? 0,
   }
 };
