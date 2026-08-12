@@ -23,11 +23,11 @@ export default function OnboardingStep1() {
           className="mx-auto mb-2 rounded-lg"
         />
 
-        <div className="space-y-3 mb-10 text-center px-6">
+        <div className="space-y-3 mb-6 text-center px-6">
           <h1 className="text-3xl font-domine font-bold text-gray-9 mb-4">Memorize os Salmos</h1>
         
-            <p className="text-lg text-center text-gray-6 mb-10">
-            Entre em uma jornada diária com o <strong>Rei Davi</strong> e eleve sua vida espiritual tendo mais intimide com a palavra de Deus!
+            <p className="text-lg text-center text-gray-6 mb-6">
+            Apenda os Salmos e tenha mais intimidade com a Palavra de Deus!
             </p>
   
             <button
