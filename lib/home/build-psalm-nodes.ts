@@ -21,17 +21,16 @@ export function buildPsalmNodes(
     progress: number;
   }[]
 ): PsalmNode[] {
-  console.log(psalms);
-  console.log(progressRows);
+ 
   const progressByPsalmId = new Map(
     progressRows.map((row) => [row.psalm_id, row])
   );
 
   let activeAssigned = false;
 
-  //Procurando o erro:
+  
   const nodes = psalms.map((psalm) => {
-  const row = progressByPsalmId.get(psalm.id);
+    const row = progressByPsalmId.get(psalm.id);
 
   if (isCompleted(row)) {
     return {
@@ -66,10 +65,9 @@ export function buildPsalmNodes(
   };
 });
 
-console.log("NODES:", nodes);
 
 return nodes;
-//vai até aqui o teste
+
 
   
 }

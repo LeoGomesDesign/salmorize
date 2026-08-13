@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useHomeData } from "@/lib/hooks/useHomeData";
 
 import PsalmModal from "../features/game/modals/PsalmModal";
@@ -25,6 +26,7 @@ const getX = (index: number) =>
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 export default function HomePage() {
+  const router = useRouter();
   const { loading, error, profile, psalms, refetch } = useHomeData();
   
   const [selectedPsalm, setSelectedPsalm] =
@@ -47,7 +49,7 @@ export default function HomePage() {
     return;
   }
 
-  window.location.href = `/lesson/${psalm.number}`;
+  router.push(`/lesson/${psalm.number}`);
   };
 
   const handleCloseModal = () => {

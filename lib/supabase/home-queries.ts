@@ -88,63 +88,65 @@ if (userStatsError) {
   if (progressResult.error) throw progressResult.error;
 
   const psalms = (psalmsResult.data ?? []) as Psalm[];
-  console.table(psalms);
+  
   const progress = progressResult.data ?? [];
 
-  const progressWithSteps = await Promise.all(
-    progress.map(async (row) => {
-      
-      //Busca a task atual
-      const { data: task, error: taskError } = await supabase
-      .from("tasks")
-      .select("stanza_id")
-      .eq("id", row.current_task_id)
-      .single();
-
-      if (taskError) {
-      throw taskError;
-      
-      }
-
-      if(!task) {
-        throw new Error("Task não encontrada.")
-      }
-
-    // Busca todas as stanzas do Salmo
-    const { data: stanzas, error: stanzasError } = await supabase
-      .from("stanzas")
-      .select("id")
-      .eq("psalm_id", row.psalm_id)
-      .order("position");
-
-    if (stanzasError) {
-      throw stanzasError;
+  const taskIds = progress.map((row) => row.current_task_id);
+  const psalmIds = [...new Set(progress.map((row) => row.psalm_id))];
+  
+  const [tasksResult, stanzasResult] = await Promise.all([
+    taskIds.length > 0
+      ? supabase.from("tasks").select("id, stanza_id").in("id", taskIds)
+      : Promise.resolve({ data: [], error: null }),
+    psalmIds.length > 0
+      ? supabase
+          .from("stanzas")
+          .select("id, psalm_id")
+          .in("psalm_id", psalmIds)
+          .order("psalm_id")
+          .order("position")
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  
+  if (tasksResult.error) throw tasksResult.error;
+  if (stanzasResult.error) throw stanzasResult.error;
+  
+  const taskById = new Map(
+    (tasksResult.data ?? []).map((task) => [task.id, task])
+  );
+  
+  const stanzasByPsalmId = new Map<number, { id: number }[]>();
+  for (const stanza of stanzasResult.data ?? []) {
+    const list = stanzasByPsalmId.get(stanza.psalm_id) ?? [];
+    list.push({ id: stanza.id });
+    stanzasByPsalmId.set(stanza.psalm_id, list);
+  }
+  
+  const progressWithSteps = progress.map((row) => {
+    const task = taskById.get(row.current_task_id);
+    if (!task) {
+      throw new Error("Task não encontrada.");
     }
-
+  
+    const stanzas = stanzasByPsalmId.get(row.psalm_id) ?? [];
     const totalSteps = stanzas.length;
-
+  
     const currentStep =
-  stanzas.findIndex(
-    (stanza) => stanza.id === task.stanza_id
-  ) + 1;
-
-const completedSteps = row.completed
-  ? totalSteps
-  : currentStep - 1;
-
-const progress =
-  totalSteps > 0
-    ? Math.round((completedSteps / totalSteps) * 100)
-    : 0;
-
+      stanzas.findIndex((stanza) => stanza.id === task.stanza_id) + 1;
+  
+    const completedSteps = row.completed ? totalSteps : currentStep - 1;
+  
+    const progressPercent =
+      totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  
     return {
       ...row,
       current_step: currentStep,
       total_steps: totalSteps,
-      progress,
+      progress: progressPercent,
     };
-  })
-);
+  });
+ 
 
 
   return {
