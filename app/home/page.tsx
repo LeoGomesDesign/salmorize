@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useHomeData } from "@/lib/hooks/useHomeData";
 
 import PsalmModal from "../features/game/modals/PsalmModal";
-import PsalmStep from "../features/game/components/PsalmStep";
+import PsalmStep from "../features/game/components/home/PsalmStep";
 import type { HomeData } from "@/lib/types/home";
 
 const STEP_HEIGHT = 120;

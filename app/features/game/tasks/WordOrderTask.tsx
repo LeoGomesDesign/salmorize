@@ -6,7 +6,8 @@ import Image from 'next/image';
 import SuccessModal from '@/app/features/game/modals/SuccessModal';
 import FailureModal from '@/app/features/game/modals/FailureModal';
 import type { Task } from "@/lib/types/task";
-import DavidSpeechBubble from '../components/DavidSpeechBubble';
+import DavidSpeechBubble from '../components/task/DavidSpeechBubble';
+import ProgressBar from '../components/task/ProgressBar';
 
 
 
@@ -313,26 +314,18 @@ const handleDragEnd = (event: DragEndEvent) => {
     <div className="h-screen overflow-hidden flex flex-col bg-app pt-6 pb-16 px-6">
       
       {/* 1. TOPO: Botão Voltar */}
-      <div className="flex flex-col pt-4">
+      <div className="flex pt-4 gap-2">
         <button 
         onClick={() => window.history.back()}
-        className="btn btn-secondary cursor-pointer w-max mb-4">
-          X
+        className="btn-secondary max-h-max">
+          <img
+            src="/svg/x.svg"
+            alt="close"
+            width={16}
+            ></img>
         </button>
         
-        <div className="flex items-center gap-2 flex-1 mx-4">
-          {/* Barra de progresso amarela */}
-          <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden shadow-inner">
-            <div className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full rounded-full transition-all duration-500"
-                 style={{width: `${progressPercent}%`,}} 
-            ></div>
-          </div>
-          
-          {/* Ícone de raio/energia */}
-          <div className="flex items-center gap-1 font-bold text-lg text-[#2D2D2D]">
-            <span className="text-[#FFC72C]">⚡</span> {task.battery}
-          </div>
-        </div>
+        <ProgressBar task={task} />
       </div>
 
       {/* 2. CONTEÚDO CENTRAL: Título e Personagem */}

@@ -1,6 +1,6 @@
 'use client';
 
-import HeaderBackButton from '@/app/components/ui/HeaderBackButton';
+import HeaderBackButton from '@/app/features/game/components/task/HeaderBackButton';
 import Image from 'next/image';
 import { useOnboarding } from '@/app/context/OnboardingContext';
 import { useState, useEffect, useRef } from 'react';
