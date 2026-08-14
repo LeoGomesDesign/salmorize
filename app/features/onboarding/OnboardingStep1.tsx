@@ -17,10 +17,10 @@ export default function OnboardingStep1() {
         <Image 
           src="/img/daviFront.png" 
           alt="Floresta - Onboarding" 
-          width={400}
+          width={320}
           height={520}
           priority
-          className="mx-auto mb-2 rounded-lg"
+          className="mx-auto mb-2"
         />
 
         <div className="space-y-3 mb-6 text-center px-6">
