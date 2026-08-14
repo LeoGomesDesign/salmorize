@@ -314,7 +314,7 @@ const handleDragEnd = (event: DragEndEvent) => {
     <div className="h-screen overflow-hidden flex flex-col bg-app pt-6 pb-16 px-6">
       
       {/* 1. TOPO: Botão Voltar */}
-      <div className="flex pt-4 gap-2">
+      <div className="flex items-center gap-2">
         <button 
         onClick={() => window.history.back()}
         className="btn-secondary max-h-max">

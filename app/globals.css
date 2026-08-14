@@ -98,7 +98,6 @@ html, body, #__next {
     font-size: 18px;
     font-weight: 700;
     padding: 16px 40px;
-    margin-bottom: 4rem;
     width: 100%;
   }
 
@@ -120,16 +119,15 @@ html, body, #__next {
 
   /* ===== MODAIS DE FEEDBACK ===== */
   .modal-feedback {
-    position: absolute;
+    position: fixed;
+    left: 50%;
     bottom: 0;
-    
     transform: translateX(-50%);
-    width: 100%;
-    padding: 1rem 6.5rem;
+    width: min(100%, 560px);
+    padding: 2rem 1.5rem max(64px, env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
-    align-items: center;
-    z-index: 50;
+    z-index: 9999;
   }
 
   .modal-success {
