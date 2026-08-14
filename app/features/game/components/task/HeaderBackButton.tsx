@@ -10,14 +10,15 @@ interface HeaderBackButtonProps {
 
 export default function HeaderBackButton({ onClick, children }: HeaderBackButtonProps) {
   return (
-    <button type="button" onClick={onClick} className="btn btn-secondary">
-      <Image
-        src="/img/chevron-left.svg"
-        alt="Voltar"
-        width={16}
-        height={16}
-      />
-      {children}
-    </button>
+    <button 
+            onClick={() => window.history.back()}
+            className="btn-secondary max-h-max">
+              <img
+                src="/svg/x.svg"
+                alt="close"
+                width={16}
+                ></img>
+                {children}
+            </button>
   );
 }

@@ -7,6 +7,15 @@ html, body, #__next {
   overflow-y: hidden;
 }
 
+.scrollbar-hidden {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
 @theme {
   /* Fonts */
   --font-domine: "Domine", serif;
@@ -128,6 +137,8 @@ html, body, #__next {
     display: flex;
     flex-direction: column;
     z-index: 9999;
+    border-radius: 16px 16px 0 0;
+    transition: transform 0.5s ease, opacity 0.5s ease;
   }
 
   .modal-success {
@@ -136,6 +147,7 @@ html, body, #__next {
 
   .modal-failure {
     background-color: var(--color-fail-bg);
+    
   }
 
   .modal-title {

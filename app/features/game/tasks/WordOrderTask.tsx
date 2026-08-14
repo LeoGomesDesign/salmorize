@@ -8,7 +8,7 @@ import FailureModal from '@/app/features/game/modals/FailureModal';
 import type { Task } from "@/lib/types/task";
 import DavidSpeechBubble from '../components/task/DavidSpeechBubble';
 import ProgressBar from '../components/task/ProgressBar';
-
+import HeaderBackButton from '../components/task/HeaderBackButton';
 
 
 
@@ -315,16 +315,8 @@ const handleDragEnd = (event: DragEndEvent) => {
       
       {/* 1. TOPO: Botão Voltar */}
       <div className="flex items-center gap-2">
-        <button 
-        onClick={() => window.history.back()}
-        className="btn-secondary max-h-max">
-          <img
-            src="/svg/x.svg"
-            alt="close"
-            width={16}
-            ></img>
-        </button>
         
+        <HeaderBackButton onClick={() => window.history.back()} />
         <ProgressBar task={task} />
       </div>
 

@@ -11,7 +11,7 @@ import type { HomeData } from "@/lib/types/home";
 const STEP_HEIGHT = 120;
 const STEP_SIZE_ACT = 64;
 
-const AREA_WIDTH = 390;
+const AREA_WIDTH = 300;
 
 const PADDING_TOP = 72;
 const PADDING_BOT = 40;
@@ -146,7 +146,7 @@ export default function HomePage() {
   return (
     
     <main
-      className="h-screen flex flex-col select-none overflow-hidden"
+      className="h-screen w-full flex flex-col select-none overflow-hidden scrollbar-hidden"
       style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
     >
       {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -219,17 +219,17 @@ export default function HomePage() {
       </div>
 
       {/* ── Barra CTA ───────────────────────────────────────────────────── */}
-      <div className="px-4 pb-10 pt-3 shrink-0">
+      <div className="px-4 mb-16 pt-3 ">
         <button
         onClick={() => handleOpenModal(activePsalm)}
           className="w-full rounded-3xl px-6 py-5 flex items-center justify-between active:scale-95 transition-transform"
           style={{ background: "linear-gradient(90deg, #538A78 0%, #1E4639 100%)", boxShadow: "0 8px 0 #0F3F2F" }}
         >
           <div className="flex flex-col items-start gap-2">
-            <span className="text-gray-2 font-black font-domine text-xl text-left">
+            <span className="text-gray-2 font-medium font-domine text-xs text-left">
               Salmo {activePsalm.number}
             </span>
-            <span className="text-gray-2 font-medium text-lg text-left">
+            <span className="text-gray-2 font-regular text-m text-left">
               {activePsalm.label}
             </span>
 
