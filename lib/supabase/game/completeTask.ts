@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/client";
-import { getNextTask } from "./getNextTask";
 
 export async function completeTask(
   progressId: number,
@@ -8,16 +7,16 @@ export async function completeTask(
 ) {
   const supabase = createClient();
 
-  // ─────────────────────────────────────────────
   // 1. Busca informações da task atual
-  // ─────────────────────────────────────────────
   const { data: task, error: taskError } = await supabase
     .from("tasks")
     .select(`
       star_reward,
       xp_reward,
       battery_cost,
-      stanza_id
+      stanza_id,
+      psalm_id,
+      global_order
     `)
     .eq("id", currentTaskId)
     .single();
@@ -26,77 +25,103 @@ export async function completeTask(
     throw taskError;
   }
 
-  // ─────────────────────────────────────────────
-  // 2. Busca a energia atual do usuário
-  // ─────────────────────────────────────────────
-  const { data: userStats, error: userStatsError } = await supabase
-    .from("user_stats")
-    .select("battery")
-    .eq("id", userId)
-    .single();
+  if (!task) {
+    throw new Error("Task não encontrada.");
+  }
+
+  // 2. Busca dados independentes em paralelo
+  const [
+    { data: userStats, error: userStatsError },
+    { data: progress, error: progressError },
+  ] = await Promise.all([
+    supabase
+      .from("user_stats")
+      .select("battery")
+      .eq("id", userId)
+      .single(),
+
+    supabase
+      .from("user_progress")
+      .select("stars, xp")
+      .eq("id", progressId)
+      .single(),
+  ]);
 
   if (userStatsError) {
     throw userStatsError;
   }
 
-  // ─────────────────────────────────────────────
-  // 3. Calcula a próxima task
-  // ─────────────────────────────────────────────
-  const nextTask = await getNextTask(currentTaskId);
-
-  // ─────────────────────────────────────────────
-  // 4. Busca o progresso atual
-  // ─────────────────────────────────────────────
-  const { data: progress, error: progressError } = await supabase
-    .from("user_progress")
-    .select("stars, xp")
-    .eq("id", progressId)
-    .single();
-
   if (progressError) {
     throw progressError;
   }
 
-  // ─────────────────────────────────────────────
-  // 5. Calcula a nova energia
-  //    Isso precisa acontecer ANTES de qualquer return
-  // ─────────────────────────────────────────────
+  // 3. Busca próxima task
+  const { data: nextTask, error: nextTaskError } = await supabase
+    .from("tasks")
+    .select(`
+      id,
+      stanza_id
+    `)
+    .eq("psalm_id", task.psalm_id)
+    .eq("global_order", task.global_order + 1)
+    .maybeSingle();
+
+  if (nextTaskError) {
+    throw nextTaskError;
+  }
+
+  // 4. Calcula novos valores
   const newBattery = Math.max(
     0,
     userStats.battery - task.battery_cost
   );
 
-  // ─────────────────────────────────────────────
-  // 6. Atualiza a energia do usuário
-  // ─────────────────────────────────────────────
-  const { error: batteryError } = await supabase
+  const newStars = progress.stars + task.star_reward;
+  const newXp = progress.xp + task.xp_reward;
+
+  // 5. Atualiza tudo que for possível em paralelo
+  const batteryUpdate = supabase
     .from("user_stats")
     .update({
       battery: newBattery,
     })
     .eq("id", userId);
 
+  const progressUpdate = supabase
+    .from("user_progress")
+    .update(
+      nextTask
+        ? {
+            current_task_id: nextTask.id,
+            stars: newStars,
+            xp: newXp,
+          }
+        : {
+            completed: true,
+            stars: newStars,
+            xp: newXp,
+          }
+    )
+    .eq("id", progressId);
+
+  const [
+    { error: batteryError },
+    { error: progressUpdateError },
+  ] = await Promise.all([
+    batteryUpdate,
+    progressUpdate,
+  ]);
+
   if (batteryError) {
     throw batteryError;
   }
 
-  // ─────────────────────────────────────────────
-  // 7. Se não existe próxima task, o Salmo terminou
-  // ─────────────────────────────────────────────
+  if (progressUpdateError) {
+    throw progressUpdateError;
+  }
+
+  // 6. Resultado
   if (!nextTask) {
-    const { error } = await supabase
-      .from("user_progress")
-      .update({
-        completed: true,
-        stars: progress.stars + task.star_reward,
-        xp: progress.xp + task.xp_reward,
-      })
-      .eq("id", progressId);
-
-    if (error) {
-      throw error;
-    }
-
     return {
       completed: true,
       nextTaskId: null,
@@ -105,35 +130,10 @@ export async function completeTask(
     };
   }
 
-  // ─────────────────────────────────────────────
-  // 8. Verifica se mudou de stanza
-  // ─────────────────────────────────────────────
-  const sessionCompleted =
-    nextTask.stanza_id !== task.stanza_id;
-
-  // ─────────────────────────────────────────────
-  // 9. Atualiza o progresso para a próxima task
-  // ─────────────────────────────────────────────
-  const { error } = await supabase
-    .from("user_progress")
-    .update({
-      current_task_id: nextTask.id,
-      stars: progress.stars + task.star_reward,
-      xp: progress.xp + task.xp_reward,
-    })
-    .eq("id", progressId);
-
-  if (error) {
-    throw error;
-  }
-
-  // ─────────────────────────────────────────────
-  // 10. Retorna resultado
-  // ─────────────────────────────────────────────
   return {
     completed: false,
     nextTaskId: nextTask.id,
-    sessionCompleted,
+    sessionCompleted: nextTask.stanza_id !== task.stanza_id,
     battery: newBattery,
   };
 }
