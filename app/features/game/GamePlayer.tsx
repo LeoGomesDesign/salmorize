@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { getUserProgress } from "@/lib/supabase/game/getUserProgress";
@@ -8,6 +8,7 @@ import {
   getCurrentTask,
   type CurrentTask,
 } from "@/lib/supabase/game/getCurrentTask";
+import { getNextTask } from "@/lib/supabase/game/getNextTask";
 
 import TaskRender from "./TaskRender";
 import { completeTask } from "@/lib/supabase/game/completeTask";
@@ -41,60 +42,91 @@ export default function GamePlayer({
   const [task, setTask] =
     useState<CurrentTask | null>(null);
 
-    useEffect(() => {
-        async function load() {
-            const progress = await getUserProgress(psalmNumber);
+  const nextTaskPromiseRef =
+    useRef<Promise<CurrentTask | null> | null>(null);
 
-            setProgress(progress);
+  useEffect(() => {
+    async function load() {
+      const progress = await getUserProgress(psalmNumber);
 
-            const task = await getCurrentTask(
-            progress.current_task_id
-        );
+      setProgress(progress);
 
-            setTask(task);
-        }
+      const task = await getCurrentTask(
+        progress.current_task_id
+      );
 
-        load();
-    },[psalmNumber]);
-
-    if (!progress || !task) {
-        return <p>Carregando...</p>
+      setTask(task);
     }
-  
- async function handleTaskCompleted() {
-  if (!progress || !task) return;
 
-  const result = await completeTask(
-    progress.id,
-    task.id,
-    progress.user_id
-  );
+    load();
+  }, [psalmNumber]);
 
-  if (result.completed || result.sessionCompleted) {
-    router.push("/home");
-    return;
+  // Prefetch da próxima task
+  useEffect(() => {
+    if (!task) return;
+
+    nextTaskPromiseRef.current = (async () => {
+      const nextTask = await getNextTask(
+        task.psalm_id,
+        task.global_order
+      );
+
+      if (!nextTask) {
+        return null;
+      }
+
+      return getCurrentTask(nextTask.id);
+    })();
+
+    return () => {
+      nextTaskPromiseRef.current = null;
+    };
+  }, [task]);
+
+  if (!progress || !task) {
+    return <p>Carregando...</p>;
   }
 
-  const nextTask = await getCurrentTask(result.nextTaskId!);
+  async function handleTaskCompleted() {
+    if (!progress || !task) return;
 
-  setTask(nextTask);
+    const result = await completeTask(
+      progress.id,
+      task.id,
+      progress.user_id
+    );
 
-  setProgress({
-    ...progress,
-    current_task_id: result.nextTaskId!,
-    battery: result.battery,
-  });
- }
+    if (result.completed || result.sessionCompleted) {
+      router.push("/home");
+      return;
+    }
+
+    const nextTask = await nextTaskPromiseRef.current;
+
+    if (!nextTask) {
+      throw new Error("Próxima task não encontrada.");
+    }
+
+    nextTaskPromiseRef.current = null;
+
+    setTask(nextTask);
+
+    setProgress({
+      ...progress,
+      current_task_id: result.nextTaskId!,
+      battery: result.battery,
+    });
+  }
 
   return (
     <main>
-      <TaskRender 
-       task={{
-        ...task,
-        battery: progress.battery,
-        max_battery: progress.max_battery,
-      }}
-       onCompleted={handleTaskCompleted}
+      <TaskRender
+        task={{
+          ...task,
+          battery: progress.battery,
+          max_battery: progress.max_battery,
+        }}
+        onCompleted={handleTaskCompleted}
       />
     </main>
   );
