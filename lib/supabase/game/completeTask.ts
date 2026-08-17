@@ -1,39 +1,35 @@
 import { createClient } from "@/lib/supabase/client";
 
+type NextTaskData = {
+  id: number;
+  stanza_id: number;
+} | null;
+
 export async function completeTask(
   progressId: number,
   currentTaskId: number,
-  userId: string
+  userId: string,
+  nextTask: NextTaskData
 ) {
   const supabase = createClient();
 
-  // 1. Busca informações da task atual
-  const { data: task, error: taskError } = await supabase
-    .from("tasks")
-    .select(`
-      star_reward,
-      xp_reward,
-      battery_cost,
-      stanza_id,
-      psalm_id,
-      global_order
-    `)
-    .eq("id", currentTaskId)
-    .single();
-
-  if (taskError) {
-    throw taskError;
-  }
-
-  if (!task) {
-    throw new Error("Task não encontrada.");
-  }
-
-  // 2. Busca dados independentes em paralelo
+  // Busca todos os dados necessários em paralelo
   const [
+    { data: task, error: taskError },
     { data: userStats, error: userStatsError },
     { data: progress, error: progressError },
   ] = await Promise.all([
+    supabase
+      .from("tasks")
+      .select(`
+        star_reward,
+        xp_reward,
+        battery_cost,
+        stanza_id
+      `)
+      .eq("id", currentTaskId)
+      .single(),
+
     supabase
       .from("user_stats")
       .select("battery")
@@ -47,6 +43,10 @@ export async function completeTask(
       .single(),
   ]);
 
+  if (taskError) {
+    throw taskError;
+  }
+
   if (userStatsError) {
     throw userStatsError;
   }
@@ -55,22 +55,10 @@ export async function completeTask(
     throw progressError;
   }
 
-  // 3. Busca próxima task
-  const { data: nextTask, error: nextTaskError } = await supabase
-    .from("tasks")
-    .select(`
-      id,
-      stanza_id
-    `)
-    .eq("psalm_id", task.psalm_id)
-    .eq("global_order", task.global_order + 1)
-    .maybeSingle();
-
-  if (nextTaskError) {
-    throw nextTaskError;
+  if (!task) {
+    throw new Error("Task não encontrada.");
   }
 
-  // 4. Calcula novos valores
   const newBattery = Math.max(
     0,
     userStats.battery - task.battery_cost
@@ -79,7 +67,6 @@ export async function completeTask(
   const newStars = progress.stars + task.star_reward;
   const newXp = progress.xp + task.xp_reward;
 
-  // 5. Atualiza tudo que for possível em paralelo
   const batteryUpdate = supabase
     .from("user_stats")
     .update({
@@ -120,7 +107,6 @@ export async function completeTask(
     throw progressUpdateError;
   }
 
-  // 6. Resultado
   if (!nextTask) {
     return {
       completed: true,

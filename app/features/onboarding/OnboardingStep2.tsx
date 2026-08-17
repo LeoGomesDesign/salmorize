@@ -6,6 +6,10 @@ import { useOnboarding } from '@/app/context/OnboardingContext';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from "@/lib/supabase/client";
 import { getPsalmAudioUrl } from "@/lib/storage/getPsalmAudioUrl";
+import SuccessModal from '../game/modals/SuccessModal';
+import FailureModal from '../game/modals/FailureModal';
+
+import DavidSpeechBubble from '../game/components/task/DavidSpeechBubble';
 
 
 
@@ -92,108 +96,7 @@ function PhraseField({ slots, answers }: { slots: WordSlot[]; answers: (string |
   );
 }
 
-function DavidSpeechBubble({
-  visible,
-  audioRef,
-  audioUrl,
-  onPlay,
-}: {
-  visible: boolean;
-  audioRef: React.RefObject<HTMLAudioElement | null>;
-  audioUrl: string;
-  onPlay: () => void;
-}) {
-  return (
-    <div
-      style={{
-        opacity: visible ? 1 : 0,
-        left: "50%",
-        transform: visible ? "translate(-50%, 0)" : "translate(-50%, 4px)",
-        transition: "opacity 0.5s ease, transform 0.5s ease",
-        transitionDelay: visible ? "0.6s" : "0s",
-      }}
-      className="absolute -bottom-4.5 z-10"
-      >
-      <button
-        type="button"
-        onClick={onPlay}
-        className=" bg-white rounded-2xl px-6 py-2 shadow-lg flex items-center gap-1"
-      >
-        <span style={{ fontSize: 18 }}>🔊</span>
-        <span
-          className="text-xs font-medium w-fit"
-          style={{ color: "#6B6B6B", fontFamily: "var(--font-montserrat)", whiteSpace: "nowrap" }}
-        >
-          Escutar novamente
-        </span>
-      </button>
-      <audio
-  ref={audioRef}
-  src={audioUrl}
-  preload="auto"
-  onLoadedData={() => console.log("Áudio carregado")}
-  onCanPlay={() => console.log("Áudio pronto para reproduzir")}
-  onCanPlayThrough={() => console.log("Áudio pode reproduzir inteiro")}
-  onError={(event) => {
-    console.error("Erro no elemento de áudio:", event.currentTarget.error);
-  }}
-/>
-    </div>
-  );
-}
 
-function SuccessModal({
-  visible,
-  onContinue,
-}: {
-  visible: boolean;
-  onContinue: () => void;
-}) {
-  if (!visible) return null;
-
-  return (  
-    <div className= "w-lg px-6 pt-4"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#CBFFB8",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <h2
-        className="text-align-left w-full mb-4"
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-          
-        }}
-      >
-        Correto!
-      </h2>
-      <button
-        onClick={onContinue}
-        className="btn btn-success mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
-      >
-        Continuar
-      </button>
-    </div>
-  );
-}
 
 function RewardModal({
   visible,
@@ -380,69 +283,6 @@ function RewardModal({
   );
 }
 
-function FailureModal({
-  visible,
-  onRetry,
-}: {
-  visible: boolean;
-  onRetry: () => void;
-}) {
-  if (!visible) return null;
-
-  return (
-    <div className="w-full px-6 pt-4"
-      style={{
-        position: "fixed",
-        bottom: 0,
-        backgroundColor: "#F8BEC4",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-      }}
-    >
-      <h2
-        className="w-full "
-        style={{
-          fontSize: 24,
-          fontWeight: 700,
-          color: "#141414",
-          fontFamily: "var(--font-domine)",
-        }}
-      >
-        Algo está errado!
-      </h2>
-      <p
-        className="w-full mb-6"
-        style={{
-          fontSize: 16,
-          fontWeight: 500,
-          color: "#141414",
-          fontFamily: "var(--font-montserrat)",
-        }}
-      >
-        Verifique as palavras escolhidas
-      </p>
-      <button
-        onClick={onRetry}
-        className="btn btn-fail w-full mb-16"
-        style={{
-          fontSize: 18,
-          fontWeight: 700,
-          paddingLeft: 40,
-          paddingRight: 40,
-          paddingTop: 16,
-          paddingBottom: 16,
-          borderRadius: 16,
-        }}
-      >
-        Tente novamente
-      </button>
-    </div>
-  );
-}
-
 
 function WordChip({
   word,
@@ -491,6 +331,10 @@ export default function OnboardingStep2() {
  
   const [options, setOptions] = useState<WordOption[]>(INITIAL_OPTIONS);
   const [answers, setAnswers] = useState<(string | null)[]>([null, null]);
+
+  function playAudio() {
+    audioRef.current?.play();
+  }
  
   useEffect(() => {
     const t = setTimeout(() => setBubbleVisible(true), 400);
@@ -597,12 +441,7 @@ useEffect(() => {
         className="min-h-screen flex flex-col bg-app"
         style={{ maxWidth: 430, margin: "0 auto" }}
       >
-        {/* ── Header ── */}
-      <div className="flex items-center px-5 pt-12 pb-2">
-        <HeaderBackButton onClick={previousStep}>
-        Voltar
-        </HeaderBackButton>
-      </div>
+      
  
       {/* ── Title ── */}
       <div className="px-6 pt-4 pb-2">
@@ -640,22 +479,18 @@ useEffect(() => {
             height={260}
           />
 
-          {/* Speech bubble */}
-          <DavidSpeechBubble
-            visible={bubbleVisible}
-            audioRef={audioRef}
-            audioUrl={audioUrl}
-            onPlay={() => {
-              const audio = audioRef.current;
-              if (!audio) return;
-              audio.currentTime = 0;
-                audio.play().catch((error) => {
-                  console.error("Erro ao reproduzir áudio:", error);
-                  // browser may block play until interaction
-                });
-              }}
             
+          {/* Speech bubble */}
+          <audio
+           ref={audioRef}
+           src={audioUrl}
+           preload="auto"
           />
+          <DavidSpeechBubble
+           visible={bubbleVisible}
+           onPlay={playAudio}
+          />
+
         </div>
       </div>
  

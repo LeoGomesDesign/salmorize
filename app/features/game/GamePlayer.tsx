@@ -31,6 +31,14 @@ type UserProgress = {
   max_battery: number;
 };
 
+type PrefetchedTask = {
+  data: {
+    id: number;
+    stanza_id: number;
+  } | null;
+  task: CurrentTask | null;
+};
+
 export default function GamePlayer({
   psalmNumber,
 }: GamePlayerProps) {
@@ -43,7 +51,7 @@ export default function GamePlayer({
     useState<CurrentTask | null>(null);
 
   const nextTaskPromiseRef =
-    useRef<Promise<CurrentTask | null> | null>(null);
+    useRef<Promise<PrefetchedTask> | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -66,16 +74,24 @@ export default function GamePlayer({
     if (!task) return;
 
     nextTaskPromiseRef.current = (async () => {
-      const nextTask = await getNextTask(
+      const data = await getNextTask(
         task.psalm_id,
         task.global_order
       );
 
-      if (!nextTask) {
-        return null;
+      if (!data) {
+        return {
+          data: null,
+          task: null,
+        };
       }
 
-      return getCurrentTask(nextTask.id);
+      const nextTask = await getCurrentTask(data.id);
+
+      return {
+        data,
+        task: nextTask,
+      };
     })();
 
     return () => {
@@ -90,10 +106,13 @@ export default function GamePlayer({
   async function handleTaskCompleted() {
     if (!progress || !task) return;
 
+    const prefetched = await nextTaskPromiseRef.current;
+
     const result = await completeTask(
       progress.id,
       task.id,
-      progress.user_id
+      progress.user_id,
+      prefetched?.data ?? null
     );
 
     if (result.completed || result.sessionCompleted) {
@@ -101,7 +120,7 @@ export default function GamePlayer({
       return;
     }
 
-    const nextTask = await nextTaskPromiseRef.current;
+    const nextTask = prefetched?.task;
 
     if (!nextTask) {
       throw new Error("Próxima task não encontrada.");
