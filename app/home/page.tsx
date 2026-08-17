@@ -187,14 +187,14 @@ export default function HomePage() {
         style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
       >
         {/* Container externo que centraliza a área da escada */}
-        <div style={{ position: "relative", width: "100%", height: totalHeight, display: "flex", justifyContent: "center" }}>
-
+        <div className="position: relative height: totalHeight display: flex">
           {/* Área fixa da escada: aqui colocamos a linha tracejada e os degraus na mesma div */}
-          <div style={{ position: "relative", width: AREA_WIDTH, height: totalHeight }}>
+          <div style={{ position: "relative", width: AREA_WIDTH, height: totalHeight, justifyContent: "center", margin: "0 auto" }}>
             {renderDashedPath()}
 
             {/* Degraus */}
-            {psalms.map((psalm, index) => {              const top  = getTop(index);
+            {psalms.map((psalm, index) => {              
+              const top  = getTop(index);
               const cx   = getX(index);
               const ring = STEP_SIZE_ACT + 16;
 

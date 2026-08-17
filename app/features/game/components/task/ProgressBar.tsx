@@ -20,7 +20,7 @@ const progressPercent = useMemo(() => {
           </div>
           
           {/* Ícone de raio/energia */}
-          <div className="position-absolute z-10 translate-x-[-11px] flex items-center gap-2 font-bold text-lg text-[#2D2D2D]">
+          <div className="position-absolute z-10 translate-x-[-11px] flex items-center gap-2 font-bold text-[24px] text-[#2D2D2D]">
             <Image
               src="/img/battery.png"
               width={28}

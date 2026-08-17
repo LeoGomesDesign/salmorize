@@ -6,6 +6,8 @@ import SuccessModal from '@/app/features/game/modals/SuccessModal';
 import FailureModal from '@/app/features/game/modals/FailureModal';
 import { TaskCompleteSheet } from '@/app/features/game/modals/CompleteTaskModal';
 import type { Task } from "@/lib/types/task";
+import HeaderBackButton from '@/app/features/game/components/task/HeaderBackButton';
+import ProgressBar from '@/app/features/game/components/task/ProgressBar';
 
 type RecapRound = {
   verseId: number;
@@ -166,25 +168,12 @@ export default function RecapTask({
   return (
     <div className="h-screen overflow-hidden bg-[#FDF6EC] text-[#2D2D2D] font-sans">
       <div className="mx-auto max-w-md h-full flex flex-col p-4">
-        <div className="flex flex-col gap-4 w-full">
-          <div className="flex items-center justify-between w-full">
-            <button 
-              onClick={() => window.history.back()}
-              className="flex items-center gap-1 bg-white px-4 py-1.5 rounded-xl border border-gray-200 text-sm font-semibold shadow-sm hover:bg-gray-50 text-gray-700"
-            >
-              ✕ Fechar
-            </button>
-            <div className="flex items-center gap-1 font-bold text-lg text-[#2D2D2D]">
-              <span className="text-[#FFC72C]">⚡</span> {task.battery}
-            </div>
-          </div>
-          <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden shadow-inner">
-            <div
-              className="bg-linear-to-r from-[#FFFFAD] to-[#FFA40B] h-full rounded-full transition-all duration-500"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
+        {/* 1. TOPO: Botão Voltar */}
+                  <div className="flex items-center gap-2">
+                    
+                    <HeaderBackButton onClick={() => window.history.back()} />
+                    <ProgressBar task={task} />
+                  </div>
 
         <div className="flex-1 flex flex-col mt-6 overflow-hidden">
           <h1 className="text-2xl font-serif font-bold text-left mb-2">
