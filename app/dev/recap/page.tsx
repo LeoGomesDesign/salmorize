@@ -59,7 +59,7 @@ const mockTask: Task = {
 
   psalm_id: 28,
 
-  verses: [],
+  verses: null,
 };
 
 export default function RecapDevPage() {

@@ -22,6 +22,11 @@ export interface Task {
 
   variant: string;
 
+  task_order: number;
+  global_order: number;
+  recap: boolean;
+  psalm_id: number;
+
   verses: {
     id: number;
     text: string;
@@ -40,8 +45,10 @@ export interface Task {
     position: number;
   }[];
 
-  task_order: number;
+  
   stanza_total_tasks: number;
   battery: number;
   max_battery: number;
+  battery_cost: number;
+  star_reward: number;
 }
