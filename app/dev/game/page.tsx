@@ -28,7 +28,8 @@ export default function GameDevPage() {
       );
 
       const nextTask = await getNextTask(
-        progressData.current_task_id
+        taskData.psalm_id,
+        taskData.global_order
       );
 
       console.log("Próxima Task:", nextTask);
@@ -38,7 +39,8 @@ export default function GameDevPage() {
       const result = await completeTask(
         progressData.id,
         progressData.current_task_id,
-        progressData.user_id
+        progressData.user_id,
+        nextTask
         );
 
         console.log(result);
@@ -52,10 +54,16 @@ export default function GameDevPage() {
 
   async function handleCompleteTask() {
     if (!progressId || !task || !progress) return;
+     const nextTask = await getNextTask(
+        task.psalm_id,
+        task.global_order
+      );
+
     await completeTask(
     progressId,
     task.id,
-    progress.user_id
+    progress.user_id,
+    nextTask
     );
 
     const updatedProgress = await getUserProgress(1);
