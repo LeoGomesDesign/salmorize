@@ -223,7 +223,7 @@ export default function RecapTask({
           </div>
         </div>
 
-        <div className="flex-none flex flex-col gap-3 pb-6 w-full px-2">
+        <div className="flex-none flex flex-col gap-3 pb-16 w-full px-2">
           <p className="text-base font-serif text-gray-800 font-medium mb-1">
             Qual a sequencia correta?
           </p>
