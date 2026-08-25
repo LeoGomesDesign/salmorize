@@ -6,7 +6,10 @@ import { useHomeData } from "@/lib/hooks/useHomeData";
 
 import PsalmModal from "../features/game/modals/PsalmModal";
 import PsalmStep from "../features/game/components/home/PsalmStep";
+import SalmorizeLoading from "@/app/features/game/components/loading/SalmorizeLoading";
+
 import type { HomeData } from "@/lib/types/home";
+
 
 const STEP_HEIGHT = 120;
 const STEP_SIZE_ACT = 64;
@@ -68,14 +71,7 @@ export default function HomePage() {
   }, [loading, psalmCount, scrollActiveIndex]);
 
   if (loading) {
-    return (
-      <main
-        className="h-screen flex items-center justify-center"
-        style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
-      >
-        <p className="text-stone-600 font-medium">Carregando jornada...</p>
-      </main>
-    );
+    return <SalmorizeLoading variant="loading" />;
   }
 
   if (error || !profile || psalms.length === 0) {
