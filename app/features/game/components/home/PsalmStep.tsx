@@ -42,7 +42,7 @@ export default function PsalmStep({
  const variant = STEP_VARIANTS[psalm.status];
  
  const isActive = psalm.status === "active";
- const isLocked = psalm.status === "locked";
+ 
   // Arco de progresso
   const ringSize = variant.size + RING_PADDING;
   const radius = (ringSize - 8) / 2;
@@ -59,11 +59,11 @@ export default function PsalmStep({
   // ───────────────────────────────────────────────────────────────
   <button
     onClick={(event) => {
-      if (!isLocked) {
+      
         onOpenModal(psalm, event.currentTarget);
-      }
+      
     }}
-    disabled={isLocked}
+    
     className="cursor-pointer hover:scale-110 active:scale-95 transition-transform disabled:cursor-not-allowed"
     style={{
       position: "relative",

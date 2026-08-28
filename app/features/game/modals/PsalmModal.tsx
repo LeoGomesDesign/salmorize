@@ -62,13 +62,20 @@ return (
           </p>        
         </div>
 
-        {/* Botão Continuar */} 
+        {/* Botão Continuar */}
+        {psalm.status === "locked" && (
+  <p className="text-blue-100 font-montserrat text-xs text-center">
+    Este Salmo ainda está bloqueado.
+  </p>
+)}
+        {psalm.status === "active" && (
         <button
-          onClick={() => onContinue(psalm)}
+         onClick={() => onContinue(psalm)}
           className="btn-secondary w-full text-center cursor-pointer flex justify-center items-center"
           >
-          Continuar
+           Continuar
         </button>
+      )}
 
         {/* Botão Ver salmo */} 
         <button
