@@ -29,7 +29,16 @@ const STEP_VARIANTS = {
 
 
 
-export default function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; onOpenModal: (psalm: PsalmNode) => void }) {
+export default function PsalmStep({ 
+  psalm, 
+  onOpenModal,
+ }: { 
+  psalm: PsalmNode; 
+  onOpenModal: (
+    psalm: PsalmNode,
+    element:HTMLElement
+  ) => void;
+ }) {
  const variant = STEP_VARIANTS[psalm.status];
  
  const isActive = psalm.status === "active";
@@ -49,7 +58,11 @@ export default function PsalmStep({ psalm, onOpenModal }: { psalm: PsalmNode; on
   // Botão do Salmo
   // ───────────────────────────────────────────────────────────────
   <button
-    onClick={() => !isLocked && onOpenModal(psalm)}
+    onClick={(event) => {
+      if (!isLocked) {
+        onOpenModal(psalm, event.currentTarget);
+      }
+    }}
     disabled={isLocked}
     className="cursor-pointer hover:scale-110 active:scale-95 transition-transform disabled:cursor-not-allowed"
     style={{

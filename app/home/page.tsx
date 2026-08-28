@@ -35,13 +35,28 @@ export default function HomePage() {
   const [selectedPsalm, setSelectedPsalm] =
   useState<HomeData["psalms"][number] | null>(null);
 
+  const [modalPosition, setModalPosition] = useState<{
+  top: number;
+  left: number;
+} | null>(null);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const activePsalm = psalms.find((p) => p.status === "active") ?? psalms[0];
 
-  const handleOpenModal = (
-    psalm: HomeData["psalms"][number]
+
+
+  const handleOpenPsalmTooltip = (
+    psalm: HomeData["psalms"][number],
+    element: HTMLElement
     ) => {
+    const rect = element.getBoundingClientRect();
+
     setSelectedPsalm(psalm);
+
+    setModalPosition({
+      top: rect.bottom + -320,
+      left: rect.left + rect.width / 2 - 130 - 10 // 130 = metade da largura do modal
+    });
   };
 
   const handleContinue = (
@@ -57,6 +72,7 @@ export default function HomePage() {
 
   const handleCloseModal = () => {
     setSelectedPsalm(null);
+    setModalPosition(null);
   };
 
   const psalmCount = psalms.length;
@@ -197,6 +213,7 @@ export default function HomePage() {
               return (
                 <div
                   key={psalm.id}
+                  
                   style={{
                     position: "absolute",
                     top,
@@ -204,7 +221,7 @@ export default function HomePage() {
                     zIndex: 10,
                   }}
                 >
-                  <PsalmStep psalm={psalm} onOpenModal={handleOpenModal} />
+                  <PsalmStep psalm={psalm} onOpenModal={handleOpenPsalmTooltip} />
 
                   
                 </div>
@@ -217,7 +234,7 @@ export default function HomePage() {
       {/* ── Barra CTA ───────────────────────────────────────────────────── */}
       <div className="px-4 mb-16 pt-3 ">
         <button
-        onClick={() => handleOpenModal(activePsalm)}
+        onClick={() => router.push(`/lesson/${activePsalm.number}`)}
           className="w-full rounded-3xl px-6 py-5 flex items-center justify-between active:scale-95 transition-transform"
           style={{ background: "linear-gradient(90deg, #538A78 0%, #1E4639 100%)", boxShadow: "0 8px 0 #0F3F2F" }}
         >
@@ -256,7 +273,8 @@ export default function HomePage() {
 
       {/* ── Modal ──────────────────────────────────────────────────────── */}
       <PsalmModal 
-        psalm={selectedPsalm} 
+        psalm={selectedPsalm}
+        position={modalPosition} 
         onClose={handleCloseModal}
         onContinue={handleContinue}
       />
