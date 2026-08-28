@@ -1,3 +1,5 @@
+
+
 export type Profile = {
   id: string;
   display_name: string | null;
@@ -25,4 +27,21 @@ export type UserProgress = {
   stars: number;
   xp: number;
   completed: boolean;
+};
+
+export type Stanza = {
+  id: number;
+  psalm_id: number;
+  position: number;
+  created_at: string;
+};
+
+export type Verse = {
+  id: number;
+  stanza_id: number;
+  position: number;
+  text: string;
+  word_count: number;
+  created_at: string;
+  audio_url: string | null;
 };

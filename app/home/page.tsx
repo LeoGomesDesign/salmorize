@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useHomeData } from "@/lib/hooks/useHomeData";
 
 import PsalmModal from "../features/game/modals/PsalmModal";
+import PsalmTextModal from "../features/game/modals/PsalmTextModal";
 import PsalmStep from "../features/game/components/home/PsalmStep";
 import SalmorizeLoading from "@/app/features/game/components/loading/SalmorizeLoading";
 
@@ -34,6 +35,8 @@ export default function HomePage() {
   
   const [selectedPsalm, setSelectedPsalm] =
   useState<HomeData["psalms"][number] | null>(null);
+
+  const [isPsalmTextOpen, setIsPsalmTextOpen] = useState(false);
 
   const [modalPosition, setModalPosition] = useState<{
   top: number;
@@ -69,6 +72,17 @@ export default function HomePage() {
 
   router.push(`/lesson/${psalm.number}`);
   };
+
+  const handleViewPsalm = (
+  psalm: HomeData["psalms"][number]
+) => {
+  setSelectedPsalm(psalm);
+  setIsPsalmTextOpen(true);
+};
+
+const handleClosePsalmText = () => {
+  setIsPsalmTextOpen(false);
+};
 
   const handleCloseModal = () => {
     setSelectedPsalm(null);
@@ -196,7 +210,11 @@ export default function HomePage() {
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto"
-        style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+        style={{ 
+          overscrollBehavior: "contain", 
+          WebkitOverflowScrolling: "touch",
+          overflowY: selectedPsalm ? "hidden" : "auto",
+        } as React.CSSProperties}
       >
         {/* Container externo que centraliza a área da escada */}
         <div className="position: relative height: totalHeight display: flex">
@@ -277,7 +295,16 @@ export default function HomePage() {
         position={modalPosition} 
         onClose={handleCloseModal}
         onContinue={handleContinue}
+        onViewPsalm={handleViewPsalm}
       />
+
+      {isPsalmTextOpen && selectedPsalm && (
+  <PsalmTextModal
+    psalm={selectedPsalm}
+    onClose={handleClosePsalmText}
+  />
+)}
+
     </main>
   );
 }

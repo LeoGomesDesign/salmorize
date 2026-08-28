@@ -11,6 +11,7 @@ type PsalmModalProps = {
   psalm: PsalmNode | null;
   onClose: () => void;
   onContinue: (psalm: PsalmNode) => void;
+  onViewPsalm: (psalm: PsalmNode) => void;
   position: PsalmModalPosition | null;
 }
 
@@ -20,6 +21,7 @@ export default function PsalmModal({
   position, 
   onClose,
   onContinue, 
+  onViewPsalm
 }: PsalmModalProps) {
 
 if (!psalm || !position) return null;
@@ -70,7 +72,7 @@ return (
 
         {/* Botão Ver salmo */} 
         <button
-          onClick={() => onContinue(psalm)}
+          onClick={() => onViewPsalm(psalm)}
           className="btn-secondary w-full text-center cursor-pointer flex justify-center items-center"
           >
           Ver salmo
