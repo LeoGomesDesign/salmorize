@@ -2,93 +2,89 @@
 
 import { PSALM_TOTAL_STEPS, type PsalmNode } from "@/lib/types/home";
 
-type PsalmModalPosition = {
-  top: number;
-  left: number;
-};
-
 type PsalmModalProps = {
   psalm: PsalmNode | null;
   onClose: () => void;
   onContinue: (psalm: PsalmNode) => void;
   onViewPsalm: (psalm: PsalmNode) => void;
-  position: PsalmModalPosition | null;
-}
+};
 
-
-export default function PsalmModal({ 
+export default function PsalmModal({
   psalm,
-  position, 
   onClose,
-  onContinue, 
-  onViewPsalm
+  onContinue,
+  onViewPsalm,
 }: PsalmModalProps) {
+  if (!psalm) return null;
 
-if (!psalm || !position) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-5">
 
-return (
-    <div
-      className="fixed z-50"
-      style={{
-        top: position.top,
-        left: position.left,
-        animation: "tooltipIn 0.2s ease-out",
-      }}
-      
-    >
+      {/* Overlay */}
+      <button
+        type="button"
+        aria-label="Fechar"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity hover:opacity-80"
+      />
+
+      {/* Modal */}
       <div
-        className="relative px-6 py-6  rounded-2xl flex flex-col items-center gap-5 w-[190px] shadow-2xl"
-        style={{ backgroundColor: "#2D4D42" }}
-        
+        className="relative z-10 w-[300px] rounded-2xl px-6 py-6 flex flex-col items-center gap-5 shadow-2xl"
+        style={{
+          backgroundColor: "#2D4D42",
+          animation: "tooltipIn 0.2s ease-out",
+        }}
       >
+
         {/* Fechar modal */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-6 text-white hover:opacity-80 transition-opacity cursor-pointer"
-          style={{ fontSize: "24px"}}
+          className="absolute right-6 top-4 text-white transition-opacity hover:opacity-80 cursor-pointer"
+          style={{ fontSize: "24px" }}
         >
           ✕
         </button>
 
-        
-
         {/* Título */}
-        <div className="font-domine w-full">
-          <h2 className="text-white font-black text-2xl ">
+        <div className="w-full font-domine">
+          <h2 className="text-2xl font-black text-white">
             Salmo {psalm.number}
           </h2>
-          <p className="text-blue-100 font-montserrat text-sm">
+
+          <p className="font-montserrat text-sm text-blue-100">
             Passo {psalm.currentStep} de {PSALM_TOTAL_STEPS}
-          </p>        
+          </p>
         </div>
 
-        {/* Botão Continuar */}
         {psalm.status === "locked" && (
-  <p className="text-blue-100 font-montserrat text-xs text-center">
-    Este Salmo ainda está bloqueado.
-  </p>
-)}
-        {psalm.status === "active" && (
-        <button
-         onClick={() => onContinue(psalm)}
-          className="btn-secondary w-full text-center cursor-pointer flex justify-center items-center"
-          >
-           Continuar
-        </button>
-      )}
+          <p className="text-center font-montserrat text-sm text-blue-100">
+            Complete os passos anteriores para desbloquear este salmo.
+          </p>
+        )}
 
-        {/* Botão Ver salmo */} 
+        {/* Continuar — somente Salmo ativo */}
+        {psalm.status === "active" && (
+          <button
+            onClick={() => onContinue(psalm)}
+            className="btn-secondary flex w-full cursor-pointer items-center justify-center text-center"
+          >
+            Decorar
+          </button>
+        )}
+
+        {/* Ver salmo — todos os Salmos */}
         <button
           onClick={() => onViewPsalm(psalm)}
-          className="btn-secondary w-full text-center cursor-pointer flex justify-center items-center"
-          >
+          className="btn-secondary flex w-full cursor-pointer items-center justify-center text-center"
+        >
           Ver salmo
         </button>
-        
+
       </div>
 
       <style>{`
-         @keyframes tooltipIn {
+        @keyframes tooltipIn {
           from {
             opacity: 0;
             transform: translateY(-6px) scale(0.97);

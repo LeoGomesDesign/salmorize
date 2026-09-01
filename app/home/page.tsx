@@ -57,8 +57,8 @@ export default function HomePage() {
     setSelectedPsalm(psalm);
 
     setModalPosition({
-      top: rect.bottom + -320,
-      left: rect.left + rect.width / 2 - 130 - 10 // 130 = metade da largura do modal
+      top: rect.bottom + -300,
+      left: rect.left + rect.width / 2 - 130 - 50 // 130 = metade da largura do modal
     });
   };
 

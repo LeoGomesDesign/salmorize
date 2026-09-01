@@ -146,7 +146,7 @@ export default function PsalmTextModal({
             TEXTO
             SOMENTE ESTA ÁREA POSSUI SCROLL
             ============================================================ */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-4  pb-16">
 
           {/* Loading */}
           {loading && (
