@@ -64,7 +64,7 @@ function PhraseField({ slots, answers }: { slots: WordSlot[]; answers: (string |
           return (
             <span
               key={slot.id}
-              className="text-xl font-bold"
+              className="text-[16px] font-bold"
               style={{ fontFamily: "var(--font-domine)", color: "#141414" }}
             >
               {slot.word}
@@ -516,7 +516,7 @@ useEffect(() => {
           className="mb-2"
           style={{
             fontFamily: "var(--font-montserrat)",
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: 400,
             color: "#6B6B6B",
             
