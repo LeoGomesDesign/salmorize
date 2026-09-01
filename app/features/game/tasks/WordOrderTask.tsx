@@ -322,7 +322,7 @@ const handleDragEnd = (event: DragEndEvent) => {
 
       {/* 2. CONTEÚDO CENTRAL: Título e Personagem */}
       <div className="flex flex-col  mt-6 flex-1">
-        <h1 className="text-2xl font-domine font-bold  mb-4">
+        <h1 className="text-xl font-domine font-bold  mb-4">
           Escreva o que você ouviu
         </h1>
 
@@ -345,22 +345,22 @@ const handleDragEnd = (event: DragEndEvent) => {
           />
 
           <audio
-  ref={audioRef}
-  src={audioUrl || undefined}
-  preload="auto"
-  onLoadedData={() => {
-    console.log("WORD ORDER - áudio carregado");
-  }}
-  onCanPlay={() => {
-    console.log("WORD ORDER - áudio pronto para reproduzir");
-  }}
-  onError={(event) => {
-    console.error(
-      "WORD ORDER - erro no elemento de áudio:",
-      event.currentTarget.error
-    );
-  }}
-/>
+            ref={audioRef}
+            src={audioUrl || undefined}
+            preload="auto"
+            onLoadedData={() => {
+              console.log("WORD ORDER - áudio carregado");
+            }}
+            onCanPlay={() => {
+              console.log("WORD ORDER - áudio pronto para reproduzir");
+            }}
+            onError={(event) => {
+              console.error(
+                "WORD ORDER - erro no elemento de áudio:",
+                event.currentTarget.error
+              );
+            }}
+          />
 
         </div>
       
@@ -406,7 +406,7 @@ const handleDragEnd = (event: DragEndEvent) => {
               <button
                 key={item.id}
                 onClick={() => handleSelectedWord(item)}
-                className="bg-white border-2 border-b-4 border-gray-200 active:border-b-2 active:mt-[2px] px-4 py-2 rounded-xl text-lg font-medium shadow-sm hover:bg-gray-50"
+                className="bg-white border-2 border-b-4 border-gray-200 active:border-b-2 active:mt-[2px] px-3 py-2 rounded-xl text-sm font-medium shadow-sm hover:bg-gray-50"
               >
                 {item.word}
               </button>
