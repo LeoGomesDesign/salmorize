@@ -416,14 +416,14 @@ const handleDragEnd = (event: DragEndEvent) => {
       </div>
 
     {/* 5. RODAPÉ: Botão Verificar Dinâmico */}
-      <div className="pb-4 pt-2">
+      <div className="pt-2" style={{ marginBottom: 64 }}>
         <button 
           onClick={handleVerify}
           disabled={!isButtonActive}
           className={`w-full text-lg font-bold py-3 rounded-2xl shadow-md transition-all border-b-4 ${
             isButtonActive 
               ? 'btn btn-primary' 
-              : 'bg-[#E5E5E5] text-[#AFAFAF] border-[#C0C0C0] cursor-not-allowed'
+              : 'btn btn-disabled'
           }`}
         >
           Verificar

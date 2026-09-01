@@ -438,8 +438,8 @@ useEffect(() => {
         }}
       />
       <div
-        className="min-h-screen flex flex-col bg-app"
-        style={{ maxWidth: 430, margin: "0 auto" }}
+        className="h-screen flex flex-col bg-app"
+        
       >
       
  
@@ -469,7 +469,7 @@ useEffect(() => {
       </div>
  
       {/* ── David + Bubble ── */}
-      <div className="pt-4 pb-6">
+      <div className="pt-4 pb-4">
         <div className="relative mx-auto" style={{ width: 200 }}>
           {/* David illustration placeholder */}
           <Image
@@ -497,9 +497,9 @@ useEffect(() => {
       
  
       {/* ── Phrase Field ── */}
-      <div className="px-6 pt-6 pb-4">
+      <div className="px-6 pt-4 pb-4">
         <div
-          className="rounded-2xl p-5"
+          className="rounded-2xl p-4"
           style={{
             background: "#ffffff",
             border: "1.5px solid #e0e0e0",
@@ -511,9 +511,9 @@ useEffect(() => {
       </div>
  
       {/* ── Word Options ── */}
-      <div className="px-6 pt-2 pb-4">
+      <div className="px-4 pt-1 mb-4">
         <p
-          className="mb-3"
+          className="mb-2"
           style={{
             fontFamily: "var(--font-montserrat)",
             fontSize: 16,
@@ -525,7 +525,7 @@ useEffect(() => {
         >
           Selecione as palavras corretas:
         </p>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {options.map((opt) => (
             <WordChip
               key={opt.id}
@@ -537,35 +537,15 @@ useEffect(() => {
         </div>
       </div>
  
-      {/* ── Spacer ── */}
-      <div className="flex-1" />
+      
  
       {/* ── Verify Button ── */}
-      <div className="px-6 pb-16 pt-4">
+      <div className="px-4 pt-3" style={{ marginBottom: 64 }}>
         <button
-          className={`btn ${canVerify ? 'btn-primary' : ''} w-full`}
+          className={canVerify ? 'btn btn-primary w-full' : 'btn btn-disabled w-full'}
           onClick={handleVerify}
           disabled={!canVerify}
-          style={{
-            width: "100%",
-            padding: "18px 0",
-            borderRadius: 18,
-            fontFamily: "var(--font-montserrat)",
-            fontWeight: 700,
-            fontSize: 16,
-            letterSpacing: "0.02em",
-            border: "none",
-            cursor: canVerify ? "pointer" : "not-allowed",
-            ...(canVerify
-              ? {}
-              : {
-                  background: "#c8c8c8",
-                  color: "#888888",
-                  boxShadow: "none",
-                }),
-            transition: "all 0.25s ease",
-            transform: canVerify ? "scale(1)" : "scale(0.99)",
-          }}
+          
         >
           Verificar
         </button>

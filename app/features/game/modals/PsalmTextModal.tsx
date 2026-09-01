@@ -68,7 +68,7 @@ export default function PsalmTextModal({
   );
 
   return (
-    <div className="fixed inset-0 z-[60]">
+    <div className="fixed inset-0 z-60">
 
       {/* Overlay */}
       <button
@@ -81,15 +81,14 @@ export default function PsalmTextModal({
       {/* Pergaminho */}
       <div className="relative z-10 mx-auto h-full max-w-3xl">
 
-        <div className="relative h-full overflow-y-auto px-6 py-10">
+        <div className="relative mx-auto flex h-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-[#F2EDE4] px-6 py-8 shadow-2xl">
 
           
 
           {/* Conteúdo */}
-          <div className="mx-auto mt-10 max-w-2xl rounded-3xl bg-[#F2EDE4] px-6 py-8 shadow-2xl">
-
+          
             {/* Cabeçalho */}
-            <header className="mb-4 text-left w-full">
+            <header className="relative shrink-0 border-b border-stone-300 bg-[#F2EDE4] px-6 pb-5 pt-8">
               <div className=" flex items-center justify-between ">
                  <p className="font-domine text-sm font-bold uppercase tracking-wider text-stone-500">
                     Salmo {psalm.number}
@@ -113,10 +112,10 @@ export default function PsalmTextModal({
                     Seu progresso
                  </span>
 
-                <span className="font-domine text-sm font-bold text-stone-700">
+                    <span className="font-domine text-sm font-bold text-stone-700">
                     {psalm.progress}%
-                </span>
-             </div>
+                    </span>
+                </div>
 
             <div
             className="h-3 w-full overflow-hidden rounded-full"
@@ -198,6 +197,6 @@ export default function PsalmTextModal({
           </div>
         </div>
       </div>
-    </div>
+    
   );
 }

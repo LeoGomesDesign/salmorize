@@ -191,15 +191,15 @@ const handleClosePsalmText = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <span className="font-bold text-stone-700 text-base">{streak}</span>
             <span className="text-lg">📅</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <span className="font-bold text-stone-700 text-base">{gems}</span>
             <span className="text-lg">💎</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <span className="font-bold text-stone-700 text-base">{energy}</span>
             <span className="text-lg">⚡</span>
           </div>
