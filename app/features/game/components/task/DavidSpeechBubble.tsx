@@ -27,7 +27,7 @@ export default function DavidSpeechBubble({
         <span style={{ fontSize: 18 }}>🔊</span>
 
         <span
-          className="text-xs font-medium"
+          className="text-xs font-medium whitespace-nowrap"
           style={{
             color: "#6B6B6B",
             fontFamily: "var(--font-montserrat)",

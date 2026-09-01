@@ -300,7 +300,7 @@ function WordChip({
         fontFamily: "var(--font-montserrat)",
         fontWeight: 600,
         fontSize: 15,
-        padding: "10px 20px",
+        padding: "8px 12px",
         borderRadius: 14,
         border: selected ? "2px solid #141414" : "2px solid #e0e0e0",
         background: selected ? "#141414" : "#ffffff",
@@ -470,12 +470,12 @@ useEffect(() => {
  
       {/* ── David + Bubble ── */}
       <div className="pt-4 pb-4">
-        <div className="relative mx-auto" style={{ width: 200 }}>
+        <div className="relative mx-auto" style={{ width: 190 }}>
           {/* David illustration placeholder */}
           <Image
             src="/img/DaviSpeaking.png"
             alt="David"
-            width={200}
+            width={190}
             height={260}
           />
 
@@ -511,7 +511,7 @@ useEffect(() => {
       </div>
  
       {/* ── Word Options ── */}
-      <div className="px-4 pt-1 mb-4">
+      <div className="px-6 pt-1 mb-4">
         <p
           className="mb-2"
           style={{
@@ -525,7 +525,7 @@ useEffect(() => {
         >
           Selecione as palavras corretas:
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {options.map((opt) => (
             <WordChip
               key={opt.id}
