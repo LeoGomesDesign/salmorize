@@ -68,135 +68,139 @@ export default function PsalmTextModal({
   );
 
   return (
-    <div className="fixed inset-0 z-60">
+  <div className="fixed inset-0 z-[60]">
 
-      {/* Overlay */}
-      <button
-        type="button"
-        aria-label="Fechar"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/80"
-      />
+    {/* Overlay */}
+    <button
+      type="button"
+      aria-label="Fechar"
+      onClick={onClose}
+      className="absolute inset-0 bg-black/70"
+    />
 
-      {/* Pergaminho */}
-      <div className="relative z-10 mx-auto h-full max-w-3xl">
+    {/* Modal */}
+    <div className="relative z-10 mx-auto h-full max-w-3xl">
 
-        <div className="relative mx-auto flex h-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-[#F2EDE4] px-6 py-8 shadow-2xl">
+      <div className="relative mx-auto flex h-full max-w-2xl flex-col overflow-hidden  bg-[#F2EDE4] shadow-2xl">
 
-          
+        {/* ============================================================
+            HEADER
+            Não possui scroll
+            ============================================================ */}
+        <header className="relative shrink-0 border-b border-stone-300 bg-[#F2EDE4] px-6 pb-5 pt-8">
 
-          {/* Conteúdo */}
-          
-            {/* Cabeçalho */}
-            <header className="relative shrink-0 border-b border-stone-300 bg-[#F2EDE4] px-6 pb-5 pt-8">
-              <div className=" flex items-center justify-between ">
-                 <p className="font-domine text-sm font-bold uppercase tracking-wider text-stone-500">
-                    Salmo {psalm.number}
-                </p>
+          {/* Fechar */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-full text-4xl font-bold text-stone-700 transition-opacity hover:opacity-70"
+          >
+            ×
+          </button>
 
-                {/* Fechar */}
-                <button
-                type="button"
-                onClick={onClose}
-                aria-label="Fechar"
-                className=" text-4xl font-regular text-stone-700 "
-                >
-                ×
-                </button>
-             </div>  
-             
-             {/* Progresso do Salmo */}
-            <div className="mx-auto mt-2 mb-2 w-full max-w-md">
-                <div className="mb-2 flex items-center justify-between">
-                 <span className="text-xs font-semibold text-stone-500">
-                    Seu progresso
-                 </span>
+          {/* Título */}
+          <div className="text-left">
+            <p className="font-domine text-sm font-bold uppercase tracking-wider text-stone-500">
+              Salmo {psalm.number}
+            </p>
 
-                    <span className="font-domine text-sm font-bold text-stone-700">
-                    {psalm.progress}%
-                    </span>
-                </div>
+            <h1 className="mt-2  font-domine text-xl font-bold text-stone-800">
+              {psalm.label}
+            </h1>
+          </div>
+
+          {/* Progresso */}
+          <div className="mx-auto mt-5 w-full max-w-md">
+
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-semibold text-stone-500">
+                Seu progresso
+              </span>
+
+              <span className="font-domine text-sm font-bold text-stone-700">
+                {psalm.progress}%
+              </span>
+            </div>
 
             <div
-            className="h-3 w-full overflow-hidden rounded-full"
-            style={{
-            backgroundColor: "#D8D2C8",
-            }}
-    >
-      <div
-        className="h-full rounded-full transition-all duration-700"
-        style={{
-          width: `${psalm.progress}%`,
-          background:
-            "linear-gradient(90deg, #279838 0%, #35DE4F 100%)",
-        }}
-      />
-    </div>
-  </div>
-
-              <h3 className="mt-4 font-domine text-[18px] font-bold text-stone-800">
-                {psalm.label}
-              </h3>
-            </header>
-
-            {/* Loading */}
-            {loading && (
-              <div className="flex justify-center py-12">
-                <p className="text-sm text-stone-500">
-                  Carregando Salmo...
-                </p>
-              </div>
-            )}
-
-            {/* Erro */}
-            {!loading && error && (
-              <div className="py-12 text-center">
-                <p className="text-sm text-red-600">
-                  {error}
-                </p>
-
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="mt-4 rounded-xl bg-stone-800 px-4 py-2 text-sm font-bold text-white"
-                >
-                  Fechar
-                </button>
-              </div>
-            )}
-
-            {/* Texto */}
-            {!loading && !error && (
-              <article className="font-domine text-[14px] leading-8 text-stone-800">
-                {orderedStanzas.map(
-                  ([stanzaId, stanzaVerses]) => (
-                    <p
-                      key={stanzaId}
-                      className="mb-6 last:mb-0"
-                    >
-                      {stanzaVerses
-                        .sort(
-                          (a, b) =>
-                            a.position - b.position
-                        )
-                        .map((verse, index) => (
-                          <span key={verse.id}>
-                            {verse.text}
-
-                            {index <
-                              stanzaVerses.length - 1 &&
-                              " "}
-                          </span>
-                        ))}
-                    </p>
-                  )
-                )}
-              </article>
-            )}
+              className="h-3 w-full overflow-hidden rounded-full"
+              style={{
+                backgroundColor: "#D8D2C8",
+              }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${psalm.progress}%`,
+                  background:
+                    "linear-gradient(90deg, #279838 0%, #35DE4F 100%)",
+                }}
+              />
+            </div>
 
           </div>
+        </header>
+
+        {/* ============================================================
+            TEXTO
+            SOMENTE ESTA ÁREA POSSUI SCROLL
+            ============================================================ */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
+
+          {/* Loading */}
+          {loading && (
+            <div className="flex justify-center py-12">
+              <p className="text-sm text-stone-500">
+                Carregando Salmo...
+              </p>
+            </div>
+          )}
+
+          {/* Erro */}
+          {!loading && error && (
+            <div className="py-12 text-center">
+              <p className="text-sm text-red-600">
+                {error}
+              </p>
+            </div>
+          )}
+
+          {/* Texto */}
+          {!loading && !error && (
+            <article className="font-domine text-[14px] leading-8 text-stone-800">
+
+              {orderedStanzas.map(
+                ([stanzaId, stanzaVerses]) => (
+                  <p
+                    key={stanzaId}
+                    className="mb-6 last:mb-0"
+                  >
+                    {stanzaVerses
+                      .sort(
+                        (a, b) =>
+                          a.position - b.position
+                      )
+                      .map((verse, index) => (
+                        <span key={verse.id}>
+                          {verse.text}
+
+                          {index <
+                            stanzaVerses.length - 1 &&
+                            " "}
+                        </span>
+                      ))}
+                  </p>
+                )
+              )}
+
+            </article>
+          )}
+
         </div>
+
       </div>
-    
-  );
+    </div>
+  </div>
+);
 }
