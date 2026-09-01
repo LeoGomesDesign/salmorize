@@ -13,7 +13,9 @@ import type { HomeData } from "@/lib/types/home";
 
 
 const STEP_HEIGHT = 120;
-const STEP_SIZE_ACT = 64;
+
+const ACTIVE_STEP_SIZE = 90;
+const STEP_RING_PADDING = 16;
 
 const AREA_WIDTH = 300;
 
@@ -38,10 +40,7 @@ export default function HomePage() {
 
   const [isPsalmTextOpen, setIsPsalmTextOpen] = useState(false);
 
-  const [modalPosition, setModalPosition] = useState<{
-  top: number;
-  left: number;
-} | null>(null);
+  
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const activePsalm = psalms.find((p) => p.status === "active") ?? psalms[0];
@@ -50,17 +49,11 @@ export default function HomePage() {
 
   const handleOpenPsalmTooltip = (
     psalm: HomeData["psalms"][number],
-    element: HTMLElement
+    
     ) => {
-    const rect = element.getBoundingClientRect();
-
     setSelectedPsalm(psalm);
-
-    setModalPosition({
-      top: rect.bottom + -300,
-      left: rect.left + rect.width / 2 - 130 - 50 // 130 = metade da largura do modal
-    });
   };
+   
 
   const handleContinue = (
     psalm: HomeData["psalms"][number]
@@ -86,7 +79,7 @@ const handleClosePsalmText = () => {
 
   const handleCloseModal = () => {
     setSelectedPsalm(null);
-    setModalPosition(null);
+    
   };
 
   const psalmCount = psalms.length;
@@ -95,9 +88,13 @@ const handleClosePsalmText = () => {
   useEffect(() => {
     if (loading || psalmCount === 0 || scrollActiveIndex < 0 || !scrollRef.current) return;
     const activeTop =
-      PADDING_TOP + (psalmCount - 1 - scrollActiveIndex) * STEP_HEIGHT;
-    const viewH = scrollRef.current.clientHeight;
-    scrollRef.current.scrollTop = activeTop - viewH / 2 + STEP_SIZE_ACT / 2;
+  PADDING_TOP +
+  (psalmCount - 1 - scrollActiveIndex) * STEP_HEIGHT;
+
+  const viewH = scrollRef.current.clientHeight;
+
+  scrollRef.current.scrollTop =
+  activeTop - viewH / 2 + ACTIVE_STEP_SIZE / 2;
   }, [loading, psalmCount, scrollActiveIndex]);
 
   if (loading) {
@@ -136,7 +133,7 @@ const handleClosePsalmText = () => {
     PADDING_TOP + (psalms.length - 1 - index) * STEP_HEIGHT;
   // Centro de cada degrau para a linha tracejada
   const stepCenterX = (index: number) => getX(index);
-  const stepCenterY = (index: number) => getTop(index) + (STEP_SIZE_ACT / 2) + 8;
+  const stepCenterY = (index: number) => getTop(index) + ACTIVE_STEP_SIZE / 2;
 
   const renderDashedPath = () => {
     const points = psalms.map((_, i) => ({
@@ -216,37 +213,54 @@ const handleClosePsalmText = () => {
           overflowY: selectedPsalm ? "hidden" : "auto",
         } as React.CSSProperties}
       >
-        {/* Container externo que centraliza a área da escada */}
-        <div className="position: relative height: totalHeight display: flex">
-          {/* Área fixa da escada: aqui colocamos a linha tracejada e os degraus na mesma div */}
-          <div style={{ position: "relative", width: AREA_WIDTH, height: totalHeight, justifyContent: "center", margin: "0 auto" }}>
-            {renderDashedPath()}
+        {/* Container que centraliza a escada */}
+<div
+  style={{
+    position: "relative",
+    width: "100%",
+    height: totalHeight,
+    display: "flex",
+    justifyContent: "center",
+  }}
+>
+  {/* Área da escada */}
+  <div
+    style={{
+      position: "relative",
+      width: AREA_WIDTH,
+      height: totalHeight,
+      flexShrink: 0,
+    }}
+  >
+    {renderDashedPath()}
 
-            {/* Degraus */}
-            {psalms.map((psalm, index) => {              
-              const top  = getTop(index);
-              const cx   = getX(index);
-              const ring = STEP_SIZE_ACT + 16;
+    {/* Degraus */}
+    {psalms.map((psalm, index) => {
+      const top = getTop(index);
+      const cx = getX(index);
 
-              return (
-                <div
-                  key={psalm.id}
-                  
-                  style={{
-                    position: "absolute",
-                    top,
-                    left: cx - ring / 2,
-                    zIndex: 10,
-                  }}
-                >
-                  <PsalmStep psalm={psalm} onOpenModal={handleOpenPsalmTooltip} />
+      // Usa o tamanho real do maior degrau
+      const ring = ACTIVE_STEP_SIZE + STEP_RING_PADDING;
 
-                  
-                </div>
-              );
-            })}
-          </div>
+      return (
+        <div
+          key={psalm.id}
+          style={{
+            position: "absolute",
+            top,
+            left: cx - ring / 2,
+            zIndex: 10,
+          }}
+        >
+          <PsalmStep
+            psalm={psalm}
+            onOpenModal={handleOpenPsalmTooltip}
+          />
         </div>
+      );
+    })}
+  </div>
+</div>
       </div>
 
       {/* ── Barra CTA ───────────────────────────────────────────────────── */}
@@ -291,8 +305,7 @@ const handleClosePsalmText = () => {
 
       {/* ── Modal ──────────────────────────────────────────────────────── */}
       <PsalmModal 
-        psalm={selectedPsalm}
-        position={modalPosition} 
+        psalm={selectedPsalm}        
         onClose={handleCloseModal}
         onContinue={handleContinue}
         onViewPsalm={handleViewPsalm}
