@@ -22,7 +22,7 @@ export function TaskCompleteSheet({
     points,
     accuracy,
     timeLabel,
-    title = "Tarefa Finalizada!!",
+    title = "Estrofe Finalizada!!",
     buttonLabel = "Continuar"
 }: TaskCompleteSheetProps) {
   // Controla se o sheet está montado no DOM (para permitir a animação de saída)

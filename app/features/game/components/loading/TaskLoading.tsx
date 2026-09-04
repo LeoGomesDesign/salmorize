@@ -45,13 +45,9 @@ export default function SalmorizeLoading({
           transition: "opacity 1s ease, transform 1.2s ease",
         }}
       >
-        <Image
-          src="/svg/logo.svg"
-          alt="Salmorize"
-          width={180}
-          height={80}
-          priority
-        />
+        <h3 className="mb-4 text-2xl font-medium text-black/70">
+          Carregando...
+        </h3>
 
         {variant === "loading" && (
          

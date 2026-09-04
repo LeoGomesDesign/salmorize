@@ -2,7 +2,7 @@ import GamePlayer from "@/app/features/game/GamePlayer";
 
 type Props = {
   params: Promise<{
-    psalmNumber: string;
+  psalmNumber: string;
   }>;
 };
 

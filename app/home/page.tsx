@@ -84,10 +84,9 @@ const handleClosePsalmText = () => {
   setViewingPsalm(null);
 };
 
-  const handleCloseModal = () => {
-    setSelectedPsalm(null);
-    
-  };
+const handleCloseModal = () => {
+  setSelectedPsalm(null);
+};
 
   const psalmCount = psalms.length;
   const scrollActiveIndex = psalms.findIndex((p) => p.status === "active");

@@ -13,6 +13,8 @@ import { getNextTask } from "@/lib/supabase/game/getNextTask";
 import TaskRender from "./TaskRender";
 import { completeTask } from "@/lib/supabase/game/completeTask";
 
+import TaskLoading from "./components/loading/TaskLoading";
+
 type GamePlayerProps = {
   psalmNumber: number;
 };
@@ -100,7 +102,7 @@ export default function GamePlayer({
   }, [task]);
 
   if (!progress || !task) {
-    return <p>Carregando...</p>;
+    return <TaskLoading />;
   }
 
   async function handleTaskCompleted() {
