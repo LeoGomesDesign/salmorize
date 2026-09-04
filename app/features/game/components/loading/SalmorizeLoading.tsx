@@ -5,10 +5,12 @@ import { useEffect, useState } from "react";
 
 type SalmorizeLoadingProps = {
   variant?: "splash" | "loading";
+  text?: string;
 };
 
 export default function SalmorizeLoading({
   variant = "loading",
+  text = "Carregando...",
 }: SalmorizeLoadingProps) {
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(false);

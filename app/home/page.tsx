@@ -40,6 +40,8 @@ export default function HomePage() {
 
   const [isPsalmTextOpen, setIsPsalmTextOpen] = useState(false);
 
+  const [viewingPsalm, setViewingPsalm] = useState<HomeData["psalms"][number] | null>(null);
+
   
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -69,12 +71,17 @@ export default function HomePage() {
   const handleViewPsalm = (
   psalm: HomeData["psalms"][number]
 ) => {
-  setSelectedPsalm(psalm);
+  // Fecha o modal inicial
+  setSelectedPsalm(null);
+  // Define o salmo que será exibido
+  setViewingPsalm(psalm);
+  // Abre o modal de texto do salmo
   setIsPsalmTextOpen(true);
 };
 
 const handleClosePsalmText = () => {
   setIsPsalmTextOpen(false);
+  setViewingPsalm(null);
 };
 
   const handleCloseModal = () => {
@@ -86,16 +93,43 @@ const handleClosePsalmText = () => {
   const scrollActiveIndex = psalms.findIndex((p) => p.status === "active");
 
   useEffect(() => {
-    if (loading || psalmCount === 0 || scrollActiveIndex < 0 || !scrollRef.current) return;
-    const activeTop =
-  PADDING_TOP +
-  (psalmCount - 1 - scrollActiveIndex) * STEP_HEIGHT;
+  if (
+    loading ||
+    psalmCount === 0 ||
+    scrollActiveIndex < 0 ||
+    !scrollRef.current
+  ) {
+    return;
+  }
 
-  const viewH = scrollRef.current.clientHeight;
+  const container = scrollRef.current;
 
-  scrollRef.current.scrollTop =
-  activeTop - viewH / 2 + ACTIVE_STEP_SIZE / 2;
-  }, [loading, psalmCount, scrollActiveIndex]);
+  // Posição vertical do Salmo ativo dentro da escada
+  const activeTop =
+    PADDING_TOP +
+    (psalmCount - 1 - scrollActiveIndex) * STEP_HEIGHT;
+
+  // Centro do Salmo ativo
+  const activeCenter =
+    activeTop + ACTIVE_STEP_SIZE / 2;
+
+  // Centro da área visível
+  const viewportCenter =
+    container.clientHeight / 2;
+
+  // Scroll necessário para centralizar o Salmo ativo
+  const targetScroll =
+    activeCenter - viewportCenter;
+
+  // Evita valores negativos ou maiores que o limite do scroll
+  const maxScroll =
+    container.scrollHeight - container.clientHeight;
+
+  container.scrollTop = Math.max(
+    0,
+    Math.min(targetScroll, maxScroll)
+  );
+}, [loading, psalmCount, scrollActiveIndex]);
 
   if (loading) {
     return <SalmorizeLoading variant="loading" />;
@@ -311,9 +345,9 @@ const handleClosePsalmText = () => {
         onViewPsalm={handleViewPsalm}
       />
 
-      {isPsalmTextOpen && selectedPsalm && (
+{isPsalmTextOpen && viewingPsalm && (
   <PsalmTextModal
-    psalm={selectedPsalm}
+    psalm={viewingPsalm}
     onClose={handleClosePsalmText}
   />
 )}
