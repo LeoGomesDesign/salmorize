@@ -167,13 +167,15 @@ useEffect(() => {
   return (
    <main
        
-      style={{
-        width: "100%",
-        
-        margin: "40px auto",
-        padding: 24,
-      }}
-    >
+   style={{
+    width: "900px",
+    maxWidth: "calc(100vw - 48px)",
+    margin: "40px auto",
+    padding: 24,
+    boxSizing: "border-box",
+    
+  }}
+>
       <h1>Importar Salmo</h1>
 {/* ============================================================
     Salmos já importados
@@ -220,12 +222,13 @@ useEffect(() => {
     <div
       style={{
         display: "flex",
-        flexWrap: "wrap",
+        
         alignItems: "flex-start",
+        justifyContent: "center",
         gap: 32,
       }}
     >
-      <div style={{ flex: "1 1 400px", minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <ImportForm
           text={text}
           onTextChange={setText}
@@ -238,7 +241,9 @@ useEffect(() => {
         />
       </div>
 
-      <div style={{ flex: "1 1 300px", minWidth: 0 }}>
+      <div style={{ width: 2, height: "550px", border: "1px solid #DDD" }}> </div> 
+
+      <div style={{ flex: 1, minWidth: 0 }}>
         <AudioImportForm
           psalmNumber={audioPsalmNumber}
           onPsalmNumberChange={setAudioPsalmNumber}

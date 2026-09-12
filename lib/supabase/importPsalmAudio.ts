@@ -5,6 +5,11 @@ export async function importPsalmAudio(
   files: File[]
 ) {
   const supabase = createClient();
+  const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+console.log("AUDIO IMPORT USER:", user?.id);
 
   // ============================================================
   // Busca o Salmo

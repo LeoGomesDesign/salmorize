@@ -63,6 +63,7 @@ export default function AudioImportForm({
               display: "block",
               marginTop: 8,
               padding: 8,
+              border: "1px solid #CCC",
             }}
           />
         </label>
@@ -82,6 +83,10 @@ export default function AudioImportForm({
             style={{
               display: "block",
               marginTop: 8,
+              border: "1px solid #CCC",
+              padding: 8,
+              cursor: "pointer",
+              backgroundColor: "#F9F9F9",
             }}
           />
         </label>
@@ -117,6 +122,7 @@ export default function AudioImportForm({
           style={{
             width: "fit-content",
             padding: "10px 16px",
+            backgroundColor: "#4CAF50",
             cursor:
               files.length === 0
                 ? "not-allowed"
