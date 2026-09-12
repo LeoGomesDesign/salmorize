@@ -135,7 +135,7 @@ export default function GamePlayer({
     setProgress({
       ...progress,
       current_task_id: result.nextTaskId!,
-      battery: result.battery,
+      // battery: result.battery,
     });
   }
 

@@ -16,7 +16,7 @@ export async function completeTask(
   // Busca todos os dados necessários em paralelo
   const [
     { data: task, error: taskError },
-    { data: userStats, error: userStatsError },
+    // { data: userStats, error: userStatsError },
     { data: progress, error: progressError },
   ] = await Promise.all([
     supabase
@@ -30,11 +30,12 @@ export async function completeTask(
       .eq("id", currentTaskId)
       .single(),
 
-    supabase
-      .from("user_stats")
-      .select("battery")
-      .eq("id", userId)
-      .single(),
+      //Comentando a para não consumir bateria...
+    // supabase
+    //   .from("user_stats")
+    //   .select("battery")
+    //   .eq("id", userId)
+    //   .single(),
 
     supabase
       .from("user_progress")
@@ -47,9 +48,9 @@ export async function completeTask(
     throw taskError;
   }
 
-  if (userStatsError) {
-    throw userStatsError;
-  }
+  // if (userStatsError) {
+  //   throw userStatsError;
+  // }
 
   if (progressError) {
     throw progressError;
@@ -59,20 +60,20 @@ export async function completeTask(
     throw new Error("Task não encontrada.");
   }
 
-  const newBattery = Math.max(
-    0,
-    userStats.battery - task.battery_cost
-  );
+  // const newBattery = Math.max(
+  //   0,
+  //   // userStats.battery - task.battery_cost
+  // );
 
   const newStars = progress.stars + task.star_reward;
   const newXp = progress.xp + task.xp_reward;
 
-  const batteryUpdate = supabase
-    .from("user_stats")
-    .update({
-      battery: newBattery,
-    })
-    .eq("id", userId);
+  // const batteryUpdate = supabase
+  //   .from("user_stats")
+  //   .update({
+  //     battery: newBattery,
+  //   })
+  //   .eq("id", userId);
 
   const progressUpdate = supabase
     .from("user_progress")
@@ -92,16 +93,16 @@ export async function completeTask(
     .eq("id", progressId);
 
   const [
-    { error: batteryError },
+    // { error: batteryError },
     { error: progressUpdateError },
   ] = await Promise.all([
-    batteryUpdate,
+    // batteryUpdate,
     progressUpdate,
   ]);
 
-  if (batteryError) {
-    throw batteryError;
-  }
+  // if (batteryError) {
+  //   throw batteryError;
+  // }
 
   if (progressUpdateError) {
     throw progressUpdateError;
@@ -112,7 +113,7 @@ export async function completeTask(
       completed: true,
       nextTaskId: null,
       sessionCompleted: true,
-      battery: newBattery,
+      // battery: newBattery,
     };
   }
 
@@ -120,6 +121,6 @@ export async function completeTask(
     completed: false,
     nextTaskId: nextTask.id,
     sessionCompleted: nextTask.stanza_id !== task.stanza_id,
-    battery: newBattery,
+    // battery: newBattery,
   };
 }
