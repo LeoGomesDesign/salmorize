@@ -172,7 +172,7 @@ export default function PsalmTextModal({
 
               {orderedStanzas.map(
                 ([stanzaId, stanzaVerses]) => (
-                  <p
+                  <div
                     key={stanzaId}
                     className="mb-6 last:mb-0"
                   >
@@ -181,16 +181,16 @@ export default function PsalmTextModal({
                         (a, b) =>
                           a.position - b.position
                       )
-                      .map((verse, index) => (
-                        <span key={verse.id}>
+                      .map((verse) => (
+                        <p
+                        key={verse.id}
+                        className="mb-1 last:mb-0"
+                        >
                           {verse.text}
-
-                          {index <
-                            stanzaVerses.length - 1 &&
-                            " "}
-                        </span>
+                        </p>  
+                          
                       ))}
-                  </p>
+                  </div>
                 )
               )}
 
