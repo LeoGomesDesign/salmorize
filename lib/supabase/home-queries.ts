@@ -3,15 +3,11 @@ import { buildPsalmNodes } from "@/lib/home/build-psalm-nodes";
 import type { Profile, Psalm } from "@/lib/types/database"
 import type { HomeData } from "@/lib/types/home";
 
-function profileFromRow(
-  row: Profile,
-  battery: number
-): HomeData["profile"] {
+function profileFromRow(row: Profile): HomeData["profile"] {
   return {
     displayName: row.display_name ?? "Ovelha",
     streak: row.streak,
     gems: row.gems,
-    energy: battery,
   };
 }
 
@@ -59,15 +55,16 @@ export async function fetchHomeData(
 
 const profileRow = await ensureProfile(supabase, user.id, fallbackName);
 
-const { data: userStats, error: userStatsError } = await supabase
-  .from("user_stats")
-  .select("battery")
-  .eq("id", user.id)
-  .single();
-
-if (userStatsError) {
-  throw userStatsError;
-}
+// Bateria desativada temporariamente durante a fase de testes.
+// const { data: userStats, error: userStatsError } = await supabase
+//   .from("user_stats")
+//   .select("battery")
+//   .eq("id", user.id)
+//   .single();
+//
+// if (userStatsError) {
+//   throw userStatsError;
+// }
 
   const [psalmsResult, progressResult] = await Promise.all([
     supabase
@@ -150,10 +147,7 @@ if (userStatsError) {
 
 
   return {
-    profile: profileFromRow(
-      profileRow,
-      userStats.battery
-    ),
+    profile: profileFromRow(profileRow),
     psalms: buildPsalmNodes(psalms, progressWithSteps),
   };
 }

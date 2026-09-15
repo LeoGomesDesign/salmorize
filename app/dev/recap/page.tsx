@@ -51,11 +51,11 @@ const mockTask: Task = {
 
   stanza_total_tasks: 3,
 
-  battery_cost: 5,
+  // battery_cost: 5,
   star_reward: 10,
 
-  battery: 100,
-  max_battery: 100,
+  // battery: 100,
+  // max_battery: 100,
 
   psalm_id: 28,
 

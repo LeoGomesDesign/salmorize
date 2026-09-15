@@ -23,15 +23,16 @@ export async function getUserProgress(psalmNumber: number) {
 
 const psalmId = psalm.id;
 
-const { data: userStats, error: statsError } = await supabase
-  .from("user_stats")
-  .select("battery, max_battery")
-  .eq("id", user.id)
-  .single();
-
-if (statsError) {
-  throw statsError;
-}
+// Bateria desativada temporariamente durante a fase de testes.
+// const { data: userStats, error: statsError } = await supabase
+//   .from("user_stats")
+//   .select("battery, max_battery")
+//   .eq("id", user.id)
+//   .single();
+//
+// if (statsError) {
+//   throw statsError;
+// }
 
   // Verifica se já existe progresso
   const { data: progress } = await supabase
@@ -42,11 +43,7 @@ if (statsError) {
     .maybeSingle();
 
   if (progress) {
-    return {
-      ...progress,
-      battery: userStats.battery,
-      max_battery: userStats.max_battery,  
-    }; 
+    return progress;
   }
 
   // Busca a primeira task do Salmo
@@ -77,9 +74,5 @@ if (statsError) {
     throw error;
   }
 
-  return {
-      ...newProgress,
-      battery: userStats.battery,
-      max_battery: userStats.max_battery,  
-    }; 
+  return newProgress;
 }

@@ -60,11 +60,6 @@ export default function HomePage() {
   const handleContinue = (
     psalm: HomeData["psalms"][number]
     ) => {
-  if (energy <= 0) {
-    alert("Você está sem energia.");
-    return;
-  }
-
   router.push(`/lesson/${psalm.number}`);
   };
 
@@ -157,7 +152,6 @@ const handleCloseModal = () => {
   const userName = profile.displayName;
   const streak = profile.streak;
   const gems = profile.gems;
-  const energy = profile.energy;
   // Altura total da área scrollável
   const totalHeight = psalms.length * STEP_HEIGHT + PADDING_TOP + PADDING_BOT;
 
@@ -228,10 +222,6 @@ const handleCloseModal = () => {
           <div className="flex items-center gap-1">
             <span className="font-bold text-stone-700 text-base">{gems}</span>
             <span className="text-lg">💎</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="font-bold text-stone-700 text-base">{energy}</span>
-            <span className="text-lg">⚡</span>
           </div>
         </div>
       </header>

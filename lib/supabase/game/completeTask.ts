@@ -19,12 +19,12 @@ export async function completeTask(
     // { data: userStats, error: userStatsError },
     { data: progress, error: progressError },
   ] = await Promise.all([
+    // battery_cost não é consultado enquanto a bateria estiver desativada.
     supabase
       .from("tasks")
       .select(`
         star_reward,
         xp_reward,
-        battery_cost,
         stanza_id
       `)
       .eq("id", currentTaskId)

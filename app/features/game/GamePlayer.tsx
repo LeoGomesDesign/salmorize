@@ -29,8 +29,6 @@ type UserProgress = {
   xp: number;
   completed: boolean;
 
-  battery: number;
-  max_battery: number;
 };
 
 type PrefetchedTask = {
@@ -135,7 +133,6 @@ export default function GamePlayer({
     setProgress({
       ...progress,
       current_task_id: result.nextTaskId!,
-      // battery: result.battery,
     });
   }
 
@@ -144,8 +141,6 @@ export default function GamePlayer({
       <TaskRender
         task={{
           ...task,
-          battery: progress.battery,
-          max_battery: progress.max_battery,
         }}
         onCompleted={handleTaskCompleted}
       />

@@ -15,7 +15,6 @@ export type HomeProfile = {
   displayName: string;
   streak: number;
   gems: number;
-  energy: number;
 };
 
 export type HomeData = {

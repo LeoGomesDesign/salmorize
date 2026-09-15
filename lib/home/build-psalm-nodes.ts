@@ -26,9 +26,6 @@ export function buildPsalmNodes(
     progressRows.map((row) => [row.psalm_id, row])
   );
 
-  let activeAssigned = false;
-
-  
   const nodes = psalms.map((psalm) => {
     const row = progressByPsalmId.get(psalm.id);
 
@@ -43,25 +40,14 @@ export function buildPsalmNodes(
     };
   }
 
-  if (!activeAssigned) {
-    activeAssigned = true;
-    return {
-      id: psalm.id,
-      number: psalm.number,
-      label: psalm.title,
-      status: "active" as const,
-      progress: row?.progress ?? 0,
-      currentStep: row?.current_step ?? 1,
-    };
-  }
-
+  // Durante os testes, qualquer salmo incompleto pode ser acessado.
   return {
     id: psalm.id,
     number: psalm.number,
     label: psalm.title,
-    status: "locked" as const,
-    progress: 0,
-    currentStep: 1,
+    status: "active" as const,
+    progress: row?.progress ?? 0,
+    currentStep: row?.current_step ?? 1,
   };
 });
 

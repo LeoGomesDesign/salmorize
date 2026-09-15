@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import type { Task } from "@/lib/types/task";
-import Image from "next/image";
 
 export default function ProgressBar({ task }: { task: Task }) {
 
@@ -19,16 +18,6 @@ const progressPercent = useMemo(() => {
             ></div>
           </div>
           
-          {/* Ícone de raio/energia */}
-          <div className="position-absolute z-10 translate-x-[-11px] flex items-center gap-2 font-bold text-[24px] text-[#2D2D2D]">
-            <Image
-              src="/img/battery.png"
-              width={28}
-              height={28}
-              alt="Ícone de bateria"
-            />
-            {task.battery}
-          </div>
         </div>
   );
 }

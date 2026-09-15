@@ -47,8 +47,8 @@ export interface Task {
 
   
   stanza_total_tasks: number;
-  battery: number;
-  max_battery: number;
-  battery_cost: number;
+  // battery: number;
+  // max_battery: number;
+  // battery_cost: number;
   star_reward: number;
 }
