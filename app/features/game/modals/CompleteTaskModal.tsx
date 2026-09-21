@@ -1,145 +1,165 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
-
 interface TaskCompleteSheetProps {
   isOpen: boolean;
-  
+
   onContinue: () => void;
+  onBack: () => void;
+
   points: number;
   accuracy: number;
   timeLabel: string;
-  title?: string;
-  buttonLabel?: string;
+
+  stanzaNumber: number;
+  psalmNumber: number;
+  isPsalmComplete: boolean;
 }
 
-
-export function TaskCompleteSheet({ 
-    isOpen,
-    onContinue,
-    points,
-    accuracy,
-    timeLabel,
-    title = "Estrofe Finalizada!!",
-    buttonLabel = "Continuar"
+export function TaskCompleteSheet({
+  isOpen,
+  onContinue,
+  onBack,
+  points,
+  accuracy,
+  timeLabel,
+  stanzaNumber,
+  psalmNumber,
+  isPsalmComplete,
 }: TaskCompleteSheetProps) {
-  // Controla se o sheet está montado no DOM (para permitir a animação de saída)
   const [mounted, setMounted] = useState(false);
-  // Controla a posição (aberto/fechado) — separado do "mounted" para o CSS transition funcionar
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-        setMounted(true);
-        requestAnimationFrame(() => setVisible(true));
-    } else {
-        setVisible(false);
-        const timeout = setTimeout(() => setMounted(false), 300); //Animação de saída
+      setMounted(true);
 
-        return () => clearTimeout(timeout);
+      requestAnimationFrame(() => {
+        setVisible(true);
+      });
+    } else {
+      setVisible(false);
+
+      const timeout = setTimeout(() => {
+        setMounted(false);
+      }, 300);
+
+      return () => clearTimeout(timeout);
     }
   }, [isOpen]);
 
   if (!mounted) return null;
 
+  const title = isPsalmComplete
+    ? `Salmo ${psalmNumber} finalizado!`
+    : `Estrofe ${stanzaNumber} finalizada!`;
+
   return (
-    <div 
-        className="fixed inset-0 z-50 flex items-end justify-center"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="task-complete-title"
-        >
-        {/* Backdrop */}
-        <div
-            className={`absolute inset-0 bg-back/50 transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
-            
-        />
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="task-complete-title"
+    >
+      {/* Backdrop */}
+      <div
+        className={`absolute inset-0 bg-back/50 transition-opacity duration-300 ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
+      />
 
-        {/* Painel */}
-        <div
-            className={`relative w-full max-w-md rounded-t-3xl bg-[#FDF6EC] px-6 pb-8 pt-10 shadow-2xl transition-transform duration-300 ease-out $ {visible ? 'translate-y-0' : 'translate-y-full' }`}
-        >
-
+      {/* Painel */}
+      <div
+        className={`relative w-full max-w-md rounded-t-3xl bg-[#FDF6EC] px-6 pb-8 pt-10 shadow-2xl transition-transform duration-300 ease-out ${
+          visible ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        {/* Davi */}
         <Image
-            className="animation-fade transition absolute left-1/2 -translate-x-1/2 -top-48"
-            src="/img/daviCelebrateModal.png"
-            alt="Davi"
-            width={205}
-            height={218}
+          className="absolute left-1/2 -top-48 -translate-x-1/2"
+          src="/img/daviCelebrateModal.png"
+          alt="Davi"
+          width={205}
+          height={218}
         />
-            
+
+        {/* Título */}
         <h2
-            id="task-complete-title"
-            className="text-center font-domine text-3xl">
-                {title}
+          id="task-complete-title"
+          className="text-center font-domine text-3xl"
+        >
+          {title}
         </h2>
 
-        <div className="relative mt-6 grid grid-cols-3 gap-4 mt-10">
-            <div className="flex flex-col items-center gap-1 rounded-2xl bg-linear-to-b from-[#FFEFD0] to-[#FDE1BC] px-2 py-4 shadow-[4px_4px_0_0_rgba(115,74,29,1)]"
-            > 
-                <Image
-                className=" absolute bottom-18 "
-                src="/svg/star.svg"
-                alt="EXP Points"
-                width={42}
-                height={42}
-                />
+        {/* Indicadores */}
+        <div className="relative mt-10 grid grid-cols-3 gap-4">
+          {/* Pontos */}
+          <div className="flex flex-col items-center justify-center gap-1 rounded-2xl p-2 border-4 border-[#734A1D]">
+            <Image
+              src="/svg/star.svg"
+              alt="Pontos"
+              width={42}
+              height={42}
+            />
 
-                <span className="text-sm text-[#6B5B3E]">Pontos</span>
-                <div>
-                    <span className="text-xl font-bold text-[#2B2A28]">{points}</span>
-                    <span className="text-x font-medium text-[#2B2A28]">XP</span>
-                </div>
-           </div> 
+            <div>
+              <span className="text-xl font-bold text-[#2B2A28]">
+                +{points}
+              </span>
+            </div>
+          </div>
 
-           <div className="flex flex-col items-center gap-1 rounded-2xl bg-linear-to-b from-[#FFEFD0] to-[#FDE1BC] px-2 py-4 shadow-[4px_4px_0_0_rgba(115,74,29,1)]"
-            > 
-                <Image
-                className=" absolute bottom-18 transition-opacity duration-300 ease hover:scale-110"
-                src="/svg/goal.svg"
-                alt="EXP Points"
-                width={42}
-                height={42}
-                />
+          {/* Acertos */}
+          <div className="flex flex-col items-center justify-center gap-1 rounded-2xl p-2 border-4 border-[#734A1D]">
+            <Image
+              src="/svg/goal.svg"
+              alt="Acertos"
+              width={42}
+              height={42}
+            />
 
-                <span className="text-sm text-[#6B5B3E]">Acertos</span>
-                <div>
-                    <span className="text-xl font-bold text-[#2B2A28]">{accuracy}</span>
-                    <span className="text-x font-medium text-[#2B2A28]">%</span>
-                </div>
-           </div>
+            <div>
+              <span className="text-xl font-bold text-[#2B2A28]">
+                {accuracy}%
+              </span>
+            </div>
+          </div>
 
-           <div className="flex flex-col items-center gap-1 rounded-2xl bg-linear-to-b from-[#FFEFD0] to-[#FDE1BC] px-2 py-4 shadow-[4px_4px_0_0_rgba(115,74,29,1)]"
-            > 
-                <Image
-                className=" absolute bottom-18 transition-opacity duration-300 ease hover:scale-110"
-                src="/svg/clock.svg"
-                alt="EXP Points"
-                width={42}
-                height={42}
-                />
+          {/* Tempo */}
+          <div className="flex flex-col items-center justify-center gap-1 rounded-2xl p-2 border-4 border-[#734A1D]">
+            <Image
+              src="/svg/clock.svg"
+              alt="Tempo"
+              width={42}
+              height={42}
+            />
 
-                <span className="text-sm text-[#6B5B3E]">Tempo</span>
-                <div>
-                    <span className="text-xl font-bold text-[#2B2A28]">{timeLabel}</span>
-                    
-                </div>
-           </div>    
-            
+            <div>
+              <span className="text-xl font-bold text-[#2B2A28]">
+                {timeLabel}
+              </span>
+            </div>
+          </div>
         </div>
 
-        
- 
+        {/* Continuar */}
         <button
           onClick={onContinue}
-          className="btn btn-primary w-full mt-10 transition-transform active:scale-[0.98]"
+          className="btn btn-primary mt-10 w-full transition-transform active:scale-[0.98]"
         >
-          {buttonLabel}
+          Continuar
+        </button>
+
+        {/* Voltar */}
+        <button
+          onClick={onBack}
+          className="mt-4 w-full rounded-2xl bg-[#FFF1DF] px-6 py-3 text-lg font-bold text-[#2B2A28] shadow-[0_4px_0_0_rgba(198,163,126,1)] transition-transform active:translate-y-[2px] active:shadow-none"
+        >
+          Voltar para o início
         </button>
       </div>
     </div>
   );
 }
- 

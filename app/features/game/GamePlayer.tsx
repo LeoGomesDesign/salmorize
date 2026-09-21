@@ -22,13 +22,10 @@ type GamePlayerProps = {
 type UserProgress = {
   id: number;
   user_id: string;
-
   current_task_id: number;
-
   stars: number;
   xp: number;
   completed: boolean;
-
 };
 
 type PrefetchedTask = {
@@ -52,6 +49,9 @@ export default function GamePlayer({
 
   const nextTaskPromiseRef =
     useRef<Promise<PrefetchedTask> | null>(null);
+
+  // Início da sessão do Salmo
+  const sessionStartTimeRef = useRef<number>(Date.now());
 
   useEffect(() => {
     async function load() {
@@ -99,6 +99,20 @@ export default function GamePlayer({
     };
   }, [task]);
 
+  // Calcula o tempo total desde o início do Salmo
+  function getSessionTime(): string {
+    const elapsedSeconds = Math.floor(
+      (Date.now() - sessionStartTimeRef.current) / 1000
+    );
+
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const seconds = elapsedSeconds % 60;
+
+    return `${String(minutes).padStart(2, "0")}:${String(
+      seconds
+    ).padStart(2, "0")}`;
+  }
+
   if (!progress || !task) {
     return <TaskLoading />;
   }
@@ -106,7 +120,8 @@ export default function GamePlayer({
   async function handleTaskCompleted() {
     if (!progress || !task) return;
 
-    const prefetched = await nextTaskPromiseRef.current;
+    const prefetched =
+      await nextTaskPromiseRef.current;
 
     const result = await completeTask(
       progress.id,
@@ -143,6 +158,7 @@ export default function GamePlayer({
           ...task,
         }}
         onCompleted={handleTaskCompleted}
+        sessionTime={getSessionTime}
       />
     </main>
   );

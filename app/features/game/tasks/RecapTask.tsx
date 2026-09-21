@@ -19,6 +19,11 @@ type RecapRound = {
 type RecapTaskProps = {
   task: Task;
   onCompleted: () => Promise<void>;
+  sessionTime: string;
+
+  stanzaNumber: number;
+  psalmNumber: number;
+  isPsalmComplete: boolean;
 };
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -91,6 +96,10 @@ function buildRecapRounds(task: Task): RecapRound[] {
 export default function RecapTask({
   task,
   onCompleted,
+  sessionTime,
+  stanzaNumber,
+  psalmNumber,
+  isPsalmComplete
 }: RecapTaskProps) {
 
   const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
@@ -102,6 +111,13 @@ export default function RecapTask({
   const [showFailure, setShowFailure] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const roundsContainerRef = useRef<HTMLDivElement | null>(null);
+  const [errors, setErrors] = useState(0);
+  const [completionTime, setCompletionTime] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  
+  const isLastTaskOfStanza =
+  task.task_order === task.stanza_total_tasks;
 
   // 2. BANCO DE DADOS DAS FRASES: Organizado em rodadas (Rounds)
   const roundsData = buildRecapRounds(task);
@@ -120,6 +136,9 @@ export default function RecapTask({
 
   // 1. LÓGICA DO CLIQUE ATUALIZADA (Substitua a sua função handleSelectOption por esta)
   const handleSelectOption = (option: string) => {
+    if (isProcessing) return;
+
+    setIsProcessing(true);
     // Correção: Atualiza o estado usando o padrão correto do React para clonar arrays
     setAnswers(prevAnswers => {
       const nextAnswers = [...prevAnswers];
@@ -132,13 +151,14 @@ export default function RecapTask({
       setTimeout(() => {
         if (currentRound < roundsData.length - 1) {
           // Se acertou a rodada 1, muda o número da rodada para ativar o próximo bloco
+          setIsProcessing(false);
           setCurrentRound(prev => prev + 1);
         } else {
     // Última rodada do Recap
-  const isLastTaskOfStanza =
-    task.task_order === task.stanza_total_tasks;
-
-  if (isLastTaskOfStanza) {
+    setIsProcessing(false);
+    
+    if (isLastTaskOfStanza) {
+    setCompletionTime(sessionTime());
     setShowComplete(true);
   } else {
     setShowSuccess(true);
@@ -147,11 +167,15 @@ export default function RecapTask({
       }, 500);
     } else {
       // Se errar em qualquer uma das etapas, dispara o modal de falha na hora
+      setErrors(prev => prev + 1);
       setTimeout(() => {
+        setIsProcessing(false);
         setShowFailure(true);
       }, 300);
     }
   };
+
+ 
  
   useEffect(() => {
     if (!roundsContainerRef.current || currentRound < 2) return;
@@ -164,6 +188,10 @@ export default function RecapTask({
 
     targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [currentRound]);
+
+  const accuracy = Math.max(0, 100 - errors * 10);
+  const points = Math.round(accuracy / 10);
+ 
 
   return (
     <div className="h-screen overflow-hidden bg-[#FDF6EC] text-[#2D2D2D] font-sans">
@@ -277,9 +305,15 @@ export default function RecapTask({
             setShowComplete(false);
             await onCompleted();
           }}
-          points={12}
-          accuracy={100}
-          timeLabel="0:45"
+          onBack={() => {
+            window.location.href = "/home";
+          }}
+          points={points}
+          accuracy={accuracy}
+          timeLabel={completionTime ?? "00:00"}
+          stanzaNumber={stanzaNumber}
+          psalmNumber={psalmNumber}
+          isPsalmComplete={isPsalmComplete}
         />
       </div>
     </div>

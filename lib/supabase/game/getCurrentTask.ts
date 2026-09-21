@@ -33,7 +33,9 @@ export interface CurrentTask {
   } | null;
 
   stanza_id: number;
+  stanza_position: number;
   psalm_id: number;
+  psalm_number: number;
 
   stanza_total_tasks: number;
 }
@@ -77,6 +79,30 @@ export async function getCurrentTask(
     throw new Error("Task não encontrada.");
   }
 
+  // Busca a posição da estrofe atual
+  const { data: stanza, error: stanzaError } =
+    await supabase
+      .from("stanzas")
+      .select("id, position")
+      .eq("id", data.stanza_id)
+      .single();
+
+  if (stanzaError) {
+    throw stanzaError;
+  }
+
+  // Busca o número do Salmo
+  const { data: psalm, error: psalmError } =
+    await supabase
+      .from("psalms")
+      .select("number")
+      .eq("id", data.psalm_id)
+      .single();
+
+  if (psalmError) {
+    throw psalmError;
+  }
+
   // Busca quantas tasks existem na stanza atual
   const { count: stanzaTotalTasks, error: stanzaCountError } =
     await supabase
@@ -113,38 +139,38 @@ export async function getCurrentTask(
   }
 
   // Todos os versos do Salmo só são necessários pelo Recap
-let psalmVerses: CurrentTask["psalm_verses"] = [];
+  let psalmVerses: CurrentTask["psalm_verses"] = [];
 
-if (data.type === "recap") {
-  const { data: stanzas, error: stanzasError } = await supabase
-    .from("stanzas")
-    .select("id")
-    .eq("psalm_id", data.psalm_id);
+  if (data.type === "recap") {
+    const { data: stanzas, error: stanzasError } = await supabase
+      .from("stanzas")
+      .select("id")
+      .eq("psalm_id", data.psalm_id);
 
-  if (stanzasError) {
-    throw stanzasError;
-  }
-
-  if (stanzas?.length) {
-    const stanzaIds = stanzas.map((stanza) => stanza.id);
-
-    const { data: verses, error: versesError } = await supabase
-      .from("verses")
-      .select(`
-        id,
-        text,
-        position
-      `)
-      .in("stanza_id", stanzaIds)
-      .order("position");
-
-    if (versesError) {
-      throw versesError;
+    if (stanzasError) {
+      throw stanzasError;
     }
 
-    psalmVerses = verses ?? [];
+    if (stanzas?.length) {
+      const stanzaIds = stanzas.map((stanza) => stanza.id);
+
+      const { data: verses, error: versesError } = await supabase
+        .from("verses")
+        .select(`
+          id,
+          text,
+          position
+        `)
+        .in("stanza_id", stanzaIds)
+        .order("position");
+
+      if (versesError) {
+        throw versesError;
+      }
+
+      psalmVerses = verses ?? [];
+    }
   }
-}
 
   const verse = Array.isArray(data.verses)
     ? data.verses[0] ?? null
@@ -156,5 +182,7 @@ if (data.type === "recap") {
     recap_verses: recapVerses,
     psalm_verses: psalmVerses,
     stanza_total_tasks: stanzaTotalTasks ?? 0,
+    stanza_position: stanza.position,
+    psalm_number: psalm.number,
   };
 }
