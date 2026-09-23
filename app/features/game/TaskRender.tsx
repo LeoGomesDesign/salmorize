@@ -8,12 +8,18 @@ type TaskRendererProps = {
   task: Task;
   onCompleted: () => Promise<void>;
   sessionTime: () => string;
+  stanzaNumber: number;
+  psalmNumber: number;
+  isPsalmComplete: boolean;
 };
 
 export default function TaskRenderer({
   task,
   onCompleted,
   sessionTime,
+  stanzaNumber,
+  psalmNumber,
+  isPsalmComplete,
 }: TaskRendererProps) {
   switch (task.type) {
     case "word_order":
@@ -38,6 +44,9 @@ export default function TaskRenderer({
           task={task}
           onCompleted={onCompleted}
           sessionTime={sessionTime}
+          stanzaNumber={stanzaNumber}
+          psalmNumber={psalmNumber}
+          isPsalmComplete={isPsalmComplete}
         />
       );
 

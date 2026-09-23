@@ -71,6 +71,10 @@ export default function RecapDevPage() {
     <RecapTask
       task={mockTask}
       onCompleted={handleCompleted}
+      sessionTime="03:33"
+      stanzaNumber={1}
+      psalmNumber={1}
+      isPsalmComplete={false}
     />
   );
 }

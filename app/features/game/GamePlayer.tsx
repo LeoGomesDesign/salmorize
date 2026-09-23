@@ -130,7 +130,7 @@ export default function GamePlayer({
       prefetched?.data ?? null
     );
 
-    if (result.completed || result.sessionCompleted) {
+    if (result.completed) {
       router.push("/home");
       return;
     }
@@ -159,6 +159,12 @@ export default function GamePlayer({
         }}
         onCompleted={handleTaskCompleted}
         sessionTime={getSessionTime}
+        stanzaNumber={task.stanza_position}
+        psalmNumber={task.psalm_number}
+        isPsalmComplete={
+          task.stanza_position === task.total_stanzas
+        }
+
       />
     </main>
   );

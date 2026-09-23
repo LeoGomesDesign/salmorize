@@ -52,9 +52,10 @@ export function TaskCompleteSheet({
 
   if (!mounted) return null;
 
-  const title = isPsalmComplete
-    ? `Salmo ${psalmNumber} finalizado!`
-    : `Estrofe ${stanzaNumber} finalizada!`;
+  const title = `Salmo: ${psalmNumber}`;
+  const subtitle = isPsalmComplete
+   ? "Salmo Finalizado!"
+   :`Estrofe ${stanzaNumber} finalizada!`;
 
   return (
     <div
@@ -92,10 +93,14 @@ export function TaskCompleteSheet({
         >
           {title}
         </h2>
+        <p className=" text-center text-lg font-medium text-gray-700">
+          {subtitle}
+        </p>
 
+        
         {/* Indicadores */}
-        <div className="relative mt-10 grid grid-cols-3 gap-4">
-          {/* Pontos */}
+        {/* <div className="relative mt-10 grid grid-cols-3 gap-4">
+          {/* Pontos 
           <div className="flex flex-col items-center justify-center gap-1 rounded-2xl p-2 border-4 border-[#734A1D]">
             <Image
               src="/svg/star.svg"
@@ -111,7 +116,7 @@ export function TaskCompleteSheet({
             </div>
           </div>
 
-          {/* Acertos */}
+          {/* Acertos 
           <div className="flex flex-col items-center justify-center gap-1 rounded-2xl p-2 border-4 border-[#734A1D]">
             <Image
               src="/svg/goal.svg"
@@ -127,7 +132,7 @@ export function TaskCompleteSheet({
             </div>
           </div>
 
-          {/* Tempo */}
+          {/* Tempo 
           <div className="flex flex-col items-center justify-center gap-1 rounded-2xl p-2 border-4 border-[#734A1D]">
             <Image
               src="/svg/clock.svg"
@@ -142,7 +147,7 @@ export function TaskCompleteSheet({
               </span>
             </div>
           </div>
-        </div>
+        </div>  */}
 
         {/* Continuar */}
         <button

@@ -36,7 +36,7 @@ export interface CurrentTask {
   stanza_position: number;
   psalm_id: number;
   psalm_number: number;
-
+  psalm_stanzas: number;
   stanza_total_tasks: number;
 }
 
@@ -95,7 +95,7 @@ export async function getCurrentTask(
   const { data: psalm, error: psalmError } =
     await supabase
       .from("psalms")
-      .select("number")
+      .select("number, total_stanzas")
       .eq("id", data.psalm_id)
       .single();
 
@@ -184,5 +184,6 @@ export async function getCurrentTask(
     stanza_total_tasks: stanzaTotalTasks ?? 0,
     stanza_position: stanza.position,
     psalm_number: psalm.number,
+    psalm_stanzas: psalm.total_stanzas,
   };
 }

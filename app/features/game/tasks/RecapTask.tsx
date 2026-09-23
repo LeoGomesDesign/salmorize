@@ -19,7 +19,7 @@ type RecapRound = {
 type RecapTaskProps = {
   task: Task;
   onCompleted: () => Promise<void>;
-  sessionTime: string;
+  sessionTime: () => string;
 
   stanzaNumber: number;
   psalmNumber: number;
