@@ -162,7 +162,7 @@ export default function GamePlayer({
         stanzaNumber={task.stanza_position}
         psalmNumber={task.psalm_number}
         isPsalmComplete={
-          task.stanza_position === task.total_stanzas
+          task.stanza_position === task.psalm_stanzas
         }
 
       />

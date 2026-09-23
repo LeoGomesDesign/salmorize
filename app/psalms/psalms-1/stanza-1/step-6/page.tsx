@@ -212,12 +212,16 @@ export default function StepSixCards() {
 
       {/* Chame seus modais normais de feedback aqui embaixo */}
       
-      <TaskCompleteSheet
-        isOpen={showSuccess} // Controlado pelo seu estado de sucesso
-        onContinue={() => router.push('/home')} // Manda ele de volta para a Home
-        points={12} // Seus pontos salvos no topo (⚡)
-        accuracy={100}
-        timeLabel="0:45"
+     <TaskCompleteSheet
+  isOpen={showSuccess}
+  onContinue={() => router.push('/home')}
+  onBack={() => router.push('/home')}
+  points={12}
+  accuracy={100}
+  timeLabel="00:00"
+  stanzaNumber={1}
+  psalmNumber={1}
+  isPsalmComplete={false}
       />
 
       <FailureModal visible={showFailure} onRetry={() => { setShowFailure(false); setTranscript(''); }} />
