@@ -102,7 +102,7 @@ export default function RecapTask({
   isPsalmComplete
 }: RecapTaskProps) {
 
-  const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
+  
   // 1. ESTADO CENTRAL: Controla em qual rodada do exercício o usuário está (0 ou 1)
   const [currentRound, setCurrentRound] = useState(0);
 

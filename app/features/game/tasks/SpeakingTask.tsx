@@ -7,6 +7,7 @@ import FailureModal from '@/app/features/game/modals/FailureModal';
 import type { Task } from "@/lib/types/task";
 import HeaderBackButton from '@/app/features/game/components/task/HeaderBackButton';
 import ProgressBar from '@/app/features/game/components/task/ProgressBar';
+import TypingTask from './TypingTask';
 
 
 
@@ -34,6 +35,7 @@ export default function SpeakingTask({
   const [transcript, setTranscript] = useState('');  
   const [showSuccess, setShowSuccess] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
+  const [showTyping, setShowTyping] = useState(false);
 
   
   
@@ -47,6 +49,7 @@ export default function SpeakingTask({
   setShowSuccess(false);
   setShowFailure(false);
   setIsRecording(false);
+  setShowTyping(false);
 }, [task.id]);
 
   useEffect(() => {
@@ -194,6 +197,10 @@ export default function SpeakingTask({
     const cleanWord = word.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
     return cleanTranscript.includes(cleanWord);
   };
+
+  if (showTyping) {
+    return <TypingTask task={task} onCompleted={onCompleted} />;
+  }
   
 
 
@@ -276,14 +283,12 @@ export default function SpeakingTask({
         )}
 
 
-       { /*
         <button 
-          onClick={() => router.push('/psalms/psalms-1/step-3')}
+          onClick={() => setShowTyping(true)}
           className="text-sm font-bold text-gray-500 hover:text-gray-700 tracking-wide mt-2"
         >
           Não posso falar agora
         </button>
-        */}
       </div>
 
 
