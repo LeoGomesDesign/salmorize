@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   description: "Uma jornada espiritual de memorização dos Salmos",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+}
+
 export default function RootLayout({
   children,
 }: {
