@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Aprenda e memorize os Salmos.",
     start_url: "/",
     display: "standalone",
-    background_color: "#F8F1E7",
-    theme_color: "#F8F1E7",
+    background_color: "#F7F0E7",
+    theme_color: "#F7F0E7",
 
     icons: [
       {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import SuccessModal from '@/app/features/game/modals/SuccessModal';
 import FailureModal from '@/app/features/game/modals/FailureModal';
@@ -27,6 +27,7 @@ export default function SpeakingTask({
   const targetPhrase = task.verses?.text ?? "";
   const progressPercent = (task.task_order / task.stanza_total_tasks) * 100;
   const targetWords = targetPhrase.split(" ");
+  const minimumAccuracy = 0.7;
 
  
 
@@ -42,15 +43,48 @@ export default function SpeakingTask({
  // Referência para guardar a instância do reconhecedor de voz
   const recognitionRef = useRef<any>(null);   
 
- // Inicializa a API de Reconhecimento de Voz ao carregar a tela
+  function normalizeText(text: string) {
+    return text
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^\w\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
-  useEffect(() => {
-  setTranscript("");
-  setShowSuccess(false);
-  setShowFailure(false);
-  setIsRecording(false);
-  setShowTyping(false);
-}, [task.id]);
+  const verifySpeech = useCallback((spokenText: string) => {
+    const targetWords = normalizeText(targetPhrase).split(" ");
+    const spokenWords = normalizeText(spokenText).split(" ");
+    let correct = 0;
+    const usedIndexes = new Set<number>();
+
+    for (const targetWord of targetWords) {
+      const foundIndex = spokenWords.findIndex(
+        (word, index) => !usedIndexes.has(index) && word === targetWord
+      );
+
+      if (foundIndex !== -1) {
+        usedIndexes.add(foundIndex);
+        correct++;
+      }
+    }
+
+    const accuracy = targetWords.length > 0 ? correct / targetWords.length : 0;
+    const percentage = Math.round(accuracy * 100);
+
+    console.log("Esperado:", targetWords);
+    console.log("Falado:", spokenWords);
+    console.log(`Acerto: ${percentage}%`);
+
+    if (accuracy >= minimumAccuracy) {
+      setShowSuccess(true);
+    } else {
+      setShowFailure(true);
+    }
+  }, [targetPhrase]);
+
+  // Reinicia o reconhecimento para cada nova frase/task.
 
   useEffect(() => {
   const SpeechRecognition =
@@ -116,9 +150,17 @@ export default function SpeakingTask({
   recognitionRef.current = recognition;
 
   return () => {
-    recognition.stop();
+    recognition.onresult = null;
+    recognition.onend = null;
+    recognition.onerror = null;
+
+    try {
+      recognition.stop();
+    } catch {
+      // O reconhecimento pode já ter sido encerrado pelo navegador.
+    }
   };
-  }, []);
+  }, [task.id, targetPhrase, verifySpeech]);
 
   // Inicia ou para a gravação ao clicar no botão
   const toggleRecording = () => {
@@ -139,57 +181,10 @@ export default function SpeakingTask({
         recognitionRef.current.start();
       } catch (error) {
         console.error('Erro ao iniciar:', error);
+        setIsRecording(false);
       }
     }
   };
-
-  function normalizeText(text: string) {
-  return text
-    .normalize("NFD") // separa os acentos
-    .replace(/[\u0300-\u036f]/g, "") // remove acentos
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "") // remove pontuação
-    .replace(/\s+/g, " ") // remove espaços duplicados
-    .trim();
-}
-
-  // Avalia se o que foi falado bate com a frase do Salmo
-  const verifySpeech = (spokenText: string) => {
-    const targetWords = normalizeText(targetPhrase).split(" ");
-    const spokenWords = normalizeText(spokenText).split(" ");
-
-     let correct = 0;
-
-  const usedIndexes = new Set<number>();
-
-  for (const targetWord of targetWords) {
-    const foundIndex = spokenWords.findIndex(
-      (word, index) =>
-        !usedIndexes.has(index) &&
-        word === targetWord
-    );
-
-    if (foundIndex !== -1) {
-      usedIndexes.add(foundIndex);
-      correct++;
-    }
-  }
-
-  const accuracy = correct / targetWords.length;
-  const percentage = Math.round(accuracy * 100);
-
-  console.log("Esperado:", targetWords);
-  console.log("Falado:", spokenWords);
-  console.log(`Acerto: ${percentage}%`);
-
-  if (accuracy >= 0.8) {
-    setShowSuccess(true);
-  } else {
-    setShowFailure(true);
-  }
-};
-  
-  
 
   // 2. FUNÇÃO MÁGICA: Limpa o texto falado e verifica se a palavra específica já foi dita
   const isWordSpoken = (word: string) => {

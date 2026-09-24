@@ -33,6 +33,7 @@ export default function TaskRenderer({
     case "speaking":
       return (
         <SpeakingTask
+          key={task.id}
           task={task}
           onCompleted={onCompleted}
         />
