@@ -169,14 +169,14 @@ useEffect(() => {
        
    style={{
     width: "900px",
-    maxWidth: "calc(100vw - 48px)",
-    margin: "40px auto",
+    
+    margin: "auto",
     padding: 24,
     boxSizing: "border-box",
     
   }}
 >
-      <h1>Importar Salmo</h1>
+     
 {/* ============================================================
     Salmos já importados
     ============================================================ */}
@@ -218,7 +218,7 @@ useEffect(() => {
     )}
   </div>
 </div>
-
+ <h1>Importar Salmo</h1>
     <div
       style={{
         display: "flex",

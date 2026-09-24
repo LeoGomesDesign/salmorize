@@ -55,20 +55,28 @@ function SortableWord({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...listeners}
       {...attributes}
-      className="bg-white border-2 border-b-4 border-gray-200 active:border-b-2 active:mt-[2px] px-4 py-2 rounded-xl font-medium shadow-sm cursor-grab active:cursor-grabbing hover:bg-gray-50 flex items-center gap-2 select-none"
+      {...listeners}
+      
+      className={`bg-white border-2 border-b-4 border-gray-200 
+      active:border-b-2 active:mt-[2px] px-4 py-2 rounded-xl font-medium 
+      shadow-sm cursor-grab active:cursor-grabbing hover:bg-gray-50 flex items-center
+      gap-2 select-none touch-none transition-shadow 
+      ${isDragging ? "shadow-lg scale-[1.02]" : ""}
+      `}
     >
       <span>{item.word}</span>
 
       <button
         type="button"
+        onPointerDown={(e) => e.stopPropagation()} // Evita que o clique no botão inicie o arrasto
         onClick={(e) => {
           e.stopPropagation();
           onRemove();
