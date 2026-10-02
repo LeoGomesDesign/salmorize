@@ -6,6 +6,7 @@ type PsalmModalProps = {
   psalm: PsalmNode | null;
   onClose: () => void;
   onContinue: (psalm: PsalmNode) => void;
+  onCompletePsalm: (psalm: PsalmNode) => void;
   onViewPsalm: (psalm: PsalmNode) => void;
 };
 
@@ -13,6 +14,7 @@ export default function PsalmModal({
   psalm,
   onClose,
   onContinue,
+  onCompletePsalm,
   onViewPsalm,
 }: PsalmModalProps) {
   if (!psalm) return null;
@@ -63,22 +65,30 @@ export default function PsalmModal({
           </p>
         )}
 
-        {/* Continuar — somente Salmo ativo */}
+        {/* Decorar por estrofes - Somente Salmo ativo */}
         {psalm.status === "active" && (
           <button
             onClick={() => onContinue(psalm)}
             className="btn-secondary flex w-full cursor-pointer items-center justify-center text-center"
           >
-            Decorar
+            Decorar por estrofes
           </button>
         )}
 
-        {/* Ver salmo — todos os Salmos */}
+        {/* Decorar Salmo completo */}
+        <button
+          onClick={() => onCompletePsalm(psalm)}
+          className="btn-secondary flex w-full cursor-pointer items-center justify-center text-center"
+        >
+          Salmo completo
+        </button>
+
+        {/* Estudar — todos os Salmos */}
         <button
           onClick={() => onViewPsalm(psalm)}
           className="btn-secondary flex w-full cursor-pointer items-center justify-center text-center"
         >
-          Ver salmo
+          Estudar salmo
         </button>
 
       </div>

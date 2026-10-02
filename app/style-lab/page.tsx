@@ -82,6 +82,7 @@ const colors = {
       }}
     >
       <h1
+      className={crimsonPro.className}
        style={{
         margin: 0,
         color: colors.graphiteDark,

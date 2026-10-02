@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useHomeData } from "@/lib/hooks/useHomeData";
 
 import PsalmModal from "../features/game/modals/PsalmModal";
+import CompletePsalmModal from "../features/game/modals/CompletePsalmModal";
 import PsalmTextModal from "../features/game/modals/PsalmTextModal";
 import PsalmStep from "../features/game/components/home/PsalmStep";
 import SalmorizeLoading from "@/app/features/game/components/loading/SalmorizeLoading";
@@ -41,7 +42,10 @@ export default function HomePage() {
   const [isPsalmTextOpen, setIsPsalmTextOpen] = useState(false);
 
   const [viewingPsalm, setViewingPsalm] = useState<HomeData["psalms"][number] | null>(null);
+  const [isCompletePsalmOpen, setIsCompletePsalmOpen] = useState(false);
 
+  const [completePsalm, setCompletePsalm] =
+    useState<HomeData["psalms"][number] | null>(null);
   
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -62,6 +66,14 @@ export default function HomePage() {
     ) => {
   router.push(`/lesson/${psalm.number}`);
   };
+
+  const handleCompletePsalm = (
+  psalm: HomeData["psalms"][number]
+) => {
+  setSelectedPsalm(null);
+  setCompletePsalm(psalm);
+  setIsCompletePsalmOpen(true);
+};
 
   const handleViewPsalm = (
   psalm: HomeData["psalms"][number]
@@ -331,8 +343,20 @@ const handleCloseModal = () => {
         psalm={selectedPsalm}        
         onClose={handleCloseModal}
         onContinue={handleContinue}
+        onCompletePsalm={handleCompletePsalm}
         onViewPsalm={handleViewPsalm}
       />
+
+    {isCompletePsalmOpen && completePsalm && (
+    <CompletePsalmModal
+    psalm={completePsalm}
+    onClose={() => {
+      setIsCompletePsalmOpen(false);
+      setCompletePsalm(null);
+    }}
+  />
+)}
+
 
 {isPsalmTextOpen && viewingPsalm && (
   <PsalmTextModal
