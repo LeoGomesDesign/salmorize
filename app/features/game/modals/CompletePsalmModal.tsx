@@ -136,48 +136,7 @@ export default function CompletePsalmModal({
     (spokenText: string) => {
       if (!currentLine) return;
 
-      const verifyTypedAnswer = () => {
-  if (!currentLine) return;
 
-  const targetWords = normalizeText(currentLine.text).split(" ");
-  const typedWords = normalizeText(typedAnswer).split(" ");
-
-  let correct = 0;
-
-  const usedIndexes = new Set<number>();
-
-  for (const targetWord of targetWords) {
-    const foundIndex = typedWords.findIndex(
-      (word, index) =>
-        !usedIndexes.has(index) &&
-        word === targetWord
-    );
-
-    if (foundIndex !== -1) {
-      usedIndexes.add(foundIndex);
-      correct++;
-    }
-  }
-
-  const accuracy =
-    targetWords.length > 0
-      ? correct / targetWords.length
-      : 0;
-
-  if (accuracy >= 0.7) {
-    setTypedAnswer("");
-
-    if (currentIndex === lines.length - 1) {
-      setShowSuccess(true);
-      return;
-    }
-
-    setCurrentIndex((index) => index + 1);
-    return;
-  }
-
-  setShowFailure(true);
-};
 
       const targetWords = normalizeText(
         currentLine.text
@@ -253,6 +212,49 @@ export default function CompletePsalmModal({
     },
     [currentIndex, currentLine, lines.length]
   );
+
+  const verifyTypedAnswer = () => {
+  if (!currentLine) return;
+
+  const targetWords = normalizeText(currentLine.text).split(" ");
+  const typedWords = normalizeText(typedAnswer).split(" ");
+
+  let correct = 0;
+
+  const usedIndexes = new Set<number>();
+
+  for (const targetWord of targetWords) {
+    const foundIndex = typedWords.findIndex(
+      (word, index) =>
+        !usedIndexes.has(index) &&
+        word === targetWord
+    );
+
+    if (foundIndex !== -1) {
+      usedIndexes.add(foundIndex);
+      correct++;
+    }
+  }
+
+  const accuracy =
+    targetWords.length > 0
+      ? correct / targetWords.length
+      : 0;
+
+  if (accuracy >= 0.7) {
+    setTypedAnswer("");
+
+    if (currentIndex === lines.length - 1) {
+      setShowSuccess(true);
+      return;
+    }
+
+    setCurrentIndex((index) => index + 1);
+    return;
+  }
+
+  setShowFailure(true);
+};
 
   // ============================================================
   // RECONHECIMENTO DE VOZ
@@ -933,7 +935,9 @@ export default function CompletePsalmModal({
             onRetry={() => {
               setShowFailure(false);
               setTranscript("");
+              setTypedAnswer("");
               setIsRecording(false);
+              continueRecordingRef.current = false;
 
               // Depois de um erro, o microfone NÃO
               // volta automaticamente.
