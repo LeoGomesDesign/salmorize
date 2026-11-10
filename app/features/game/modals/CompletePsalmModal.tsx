@@ -34,21 +34,24 @@ export default function CompletePsalmModal({
   const [error, setError] = useState<string | null>(null);
 
   const [isVisible, setIsVisible] = useState(false);
-
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
-  const [inputMode, setInputMode] = useState<"speaking" | "typing">("speaking");
+
+  const [inputMode, setInputMode] = useState<"speaking" | "typing">(
+    "speaking"
+  );
+
   const [typedAnswer, setTypedAnswer] = useState("");
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [showFailure, setShowFailure] = useState(false);
 
   const recognitionRef = useRef<any>(null);
+  const activeLineRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Indica se o microfone deve continuar automaticamente
-  // para a próxima linha depois de um acerto.
   const continueRecordingRef = useRef(false);
 
   // ============================================================
@@ -129,61 +132,64 @@ export default function CompletePsalmModal({
   };
 
   // ============================================================
-  // VERIFICAÇÃO
+  // CÁLCULO DE PRECISÃO
+  // ============================================================
+
+  const calculateAccuracy = (
+    targetText: string,
+    answerText: string
+  ) => {
+    const targetWords = normalizeText(targetText)
+      .split(" ")
+      .filter(Boolean);
+
+    const answerWords = normalizeText(answerText)
+      .split(" ")
+      .filter(Boolean);
+
+    let correct = 0;
+
+    const usedIndexes = new Set<number>();
+
+    for (const targetWord of targetWords) {
+      const foundIndex = answerWords.findIndex(
+        (word, index) =>
+          !usedIndexes.has(index) &&
+          word === targetWord
+      );
+
+      if (foundIndex !== -1) {
+        usedIndexes.add(foundIndex);
+        correct++;
+      }
+    }
+
+    return targetWords.length > 0
+      ? correct / targetWords.length
+      : 0;
+  };
+
+  // ============================================================
+  // VERIFICAÇÃO POR VOZ
   // ============================================================
 
   const verifyLine = useCallback(
     (spokenText: string) => {
       if (!currentLine) return;
 
-
-
-      const targetWords = normalizeText(
-        currentLine.text
-      ).split(" ");
-
-      const spokenWords = normalizeText(
+      const accuracy = calculateAccuracy(
+        currentLine.text,
         spokenText
-      ).split(" ");
-
-      let correct = 0;
-
-      const usedIndexes = new Set<number>();
-
-      for (const targetWord of targetWords) {
-        const foundIndex = spokenWords.findIndex(
-          (word, index) =>
-            !usedIndexes.has(index) &&
-            word === targetWord
-        );
-
-        if (foundIndex !== -1) {
-          usedIndexes.add(foundIndex);
-          correct++;
-        }
-      }
-
-      const accuracy =
-        targetWords.length > 0
-          ? correct / targetWords.length
-          : 0;
-
-      const percentage = Math.round(
-        accuracy * 100
       );
 
-      console.log("Esperado:", targetWords);
-      console.log("Falado:", spokenWords);
-      console.log(`Acerto: ${percentage}%`);
-
-      // ========================================================
-      // ACERTO
-      // ========================================================
+      console.log(
+        "Precisão por voz:",
+        Math.round(accuracy * 100) + "%"
+      );
 
       if (accuracy >= 0.7) {
         setTranscript("");
 
-        // Última linha: encerra definitivamente.
         if (currentIndex === lines.length - 1) {
           continueRecordingRef.current = false;
           setIsRecording(false);
@@ -191,8 +197,6 @@ export default function CompletePsalmModal({
           return;
         }
 
-        // Ainda existem linhas:
-        // a próxima linha deverá iniciar automaticamente.
         continueRecordingRef.current = true;
 
         setCurrentIndex((index) => index + 1);
@@ -200,61 +204,212 @@ export default function CompletePsalmModal({
         return;
       }
 
-      // ========================================================
-      // ERRO
-      // ========================================================
-
-      // Errou: não continua automaticamente.
       continueRecordingRef.current = false;
       setIsRecording(false);
-
       setShowFailure(true);
     },
     [currentIndex, currentLine, lines.length]
   );
 
-  const verifyTypedAnswer = () => {
-  if (!currentLine) return;
+  // ============================================================
+  // VERIFICAÇÃO POR DIGITAÇÃO
+  // ============================================================
 
-  const targetWords = normalizeText(currentLine.text).split(" ");
-  const typedWords = normalizeText(typedAnswer).split(" ");
+  const verifyTypedAnswer = useCallback(() => {
+    if (!currentLine || !typedAnswer.trim()) return;
 
-  let correct = 0;
-
-  const usedIndexes = new Set<number>();
-
-  for (const targetWord of targetWords) {
-    const foundIndex = typedWords.findIndex(
-      (word, index) =>
-        !usedIndexes.has(index) &&
-        word === targetWord
+    const accuracy = calculateAccuracy(
+      currentLine.text,
+      typedAnswer
     );
 
-    if (foundIndex !== -1) {
-      usedIndexes.add(foundIndex);
-      correct++;
-    }
-  }
+    console.log(
+      "Precisão por digitação:",
+      Math.round(accuracy * 100) + "%"
+    );
 
-  const accuracy =
-    targetWords.length > 0
-      ? correct / targetWords.length
-      : 0;
+    if (accuracy >= 0.7) {
+      setTypedAnswer("");
 
-  if (accuracy >= 0.7) {
-    setTypedAnswer("");
+      if (currentIndex === lines.length - 1) {
+        setShowSuccess(true);
+        return;
+      }
 
-    if (currentIndex === lines.length - 1) {
-      setShowSuccess(true);
+      setCurrentIndex((index) => index + 1);
+
       return;
     }
 
-    setCurrentIndex((index) => index + 1);
-    return;
-  }
+    setShowFailure(true);
+  }, [
+    currentIndex,
+    currentLine,
+    lines.length,
+    typedAnswer,
+  ]);
 
-  setShowFailure(true);
-};
+  // ============================================================
+  // SCROLL AUTOMÁTICO
+  // ============================================================
+
+  useEffect(() => {
+    if (loading || !currentLine) return;
+
+    activeLineRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }, [currentIndex, loading, currentLine]);
+
+  // ============================================================
+  // FOCO AUTOMÁTICO NA DIGITAÇÃO
+  // ============================================================
+
+  useEffect(() => {
+    if (
+      inputMode === "typing" &&
+      !isVisible &&
+      !showFailure &&
+      !showSuccess
+    ) {
+      textareaRef.current?.focus();
+    }
+  }, [
+    currentIndex,
+    inputMode,
+    isVisible,
+    showFailure,
+    showSuccess,
+  ]);
+
+  // ============================================================
+  // PALAVRAS DIGITADAS
+  // ============================================================
+
+  const getTypedWord = (index: number) => {
+    const typedWords = typedAnswer.trim()
+      ? typedAnswer.trim().split(/\s+/)
+      : [];
+
+    return typedWords[index] || "";
+  };
+
+  // ============================================================
+  // PALAVRAS RECONHECIDAS POR VOZ
+  // ============================================================
+
+  const getWordState = (
+    word: string,
+    index: number
+  ) => {
+    if (!transcript) return "hidden";
+
+    const targetWords = normalizeText(
+      currentLine?.text ?? ""
+    ).split(" ");
+
+    const spokenWords = normalizeText(
+      transcript
+    ).split(" ");
+
+    const usedIndexes = new Set<number>();
+
+    for (let i = 0; i < index; i++) {
+      const previousWord = targetWords[i];
+
+      const foundIndex = spokenWords.findIndex(
+        (spokenWord, spokenIndex) =>
+          !usedIndexes.has(spokenIndex) &&
+          spokenWord === previousWord
+      );
+
+      if (foundIndex !== -1) {
+        usedIndexes.add(foundIndex);
+      }
+    }
+
+    const currentWord = normalizeText(word);
+
+    const foundIndex = spokenWords.findIndex(
+      (spokenWord, spokenIndex) =>
+        !usedIndexes.has(spokenIndex) &&
+        spokenWord === currentWord
+    );
+
+    return foundIndex !== -1
+      ? "correct"
+      : "wrong";
+  };
+
+  // ============================================================
+  // RENDERIZAÇÃO DAS PALAVRAS DA LINHA ATUAL
+  // ============================================================
+
+  const renderActiveWords = (text: string) => {
+    const targetWords = text.split(/\s+/);
+
+    const typedWords = typedAnswer.trim()
+      ? typedAnswer.trim().split(/\s+/)
+      : [];
+
+    return (
+      <>
+        {targetWords.map((word, index) => {
+          const typedWord =
+            inputMode === "typing"
+              ? getTypedWord(index)
+              : "";
+
+          const state =
+            inputMode === "typing"
+              ? typedWord
+                ? normalizeText(typedWord) === normalizeText(word)
+                  ? "correct"
+                  : "wrong"
+                : "hidden"
+              : getWordState(word, index);
+
+          return (
+            <span
+              key={index}
+              className={
+                state === "correct"
+                  ? "inline-block font-bold text-stone-800"
+                  : state === "wrong"
+                    ? "inline-block font-bold text-red-600"
+                    : "inline-block h-[10px] min-w-10 border-b-2 border-dashed border-stone-400"
+              }
+            >
+              {inputMode === "typing"
+                ? typedWord
+                : state === "hidden"
+                  ? ""
+                  : word}
+            </span>
+          );
+        })}
+
+        {/* Palavras extras digitadas */}
+        {inputMode === "typing" &&
+          typedWords.slice(targetWords.length).map(
+            (word, index) => (
+              <span
+                key={`extra-${index}`}
+                className="inline-block font-bold text-red-600"
+              >
+                {word}
+              </span>
+            )
+          )}
+
+        {/* Cursor visual */}
+        {inputMode === "typing" && (
+          <span className="inline-block h-5 border-l-2 border-[#2D4D42] animate-pulse" />
+        )}
+      </>
+    );
+  };
 
   // ============================================================
   // RECONHECIMENTO DE VOZ
@@ -321,15 +476,11 @@ export default function CompletePsalmModal({
 
       switch (event.error) {
         case "not-allowed":
-          alert(
-            "Permissão do microfone negada."
-          );
+          alert("Permissão do microfone negada.");
           break;
 
         case "audio-capture":
-          alert(
-            "Nenhum microfone encontrado."
-          );
+          alert("Nenhum microfone encontrado.");
           break;
 
         case "network":
@@ -345,13 +496,7 @@ export default function CompletePsalmModal({
 
     recognitionRef.current = recognition;
 
-    // ========================================================
-    // CONTINUAÇÃO AUTOMÁTICA
-    //
-    // Depois que uma linha é acertada, currentIndex muda.
-    // O efeito é recriado para a nova linha e o reconhecimento
-    // começa automaticamente.
-    // ========================================================
+    // Continuação automática após acerto
 
     if (continueRecordingRef.current) {
       setTranscript("");
@@ -378,13 +523,13 @@ export default function CompletePsalmModal({
       try {
         recognition.stop();
       } catch {
-        // O reconhecimento pode já ter sido encerrado.
+        // Reconhecimento já encerrado.
       }
     };
   }, [currentIndex, currentLine, verifyLine]);
 
   // ============================================================
-  // INICIAR / PARAR VOZ MANUALMENTE
+  // INICIAR / PARAR VOZ
   // ============================================================
 
   const toggleRecording = () => {
@@ -420,55 +565,6 @@ export default function CompletePsalmModal({
   };
 
   // ============================================================
-  // PALAVRAS RECONHECIDAS
-  // ============================================================
-
-  const getWordState = (
-    word: string,
-    index: number
-  ) => {
-    if (!transcript) {
-      return "hidden";
-    }
-
-    const targetWords = normalizeText(
-      currentLine?.text ?? ""
-    ).split(" ");
-
-    const spokenWords = normalizeText(
-      transcript
-    ).split(" ");
-
-    const usedIndexes = new Set<number>();
-
-    for (let i = 0; i < index; i++) {
-      const previousWord = targetWords[i];
-
-      const foundIndex = spokenWords.findIndex(
-        (spokenWord, spokenIndex) =>
-          !usedIndexes.has(spokenIndex) &&
-          spokenWord === previousWord
-      );
-
-      if (foundIndex !== -1) {
-        usedIndexes.add(foundIndex);
-      }
-    }
-
-    const currentWord = normalizeText(word);
-
-    const foundIndex = spokenWords.findIndex(
-      (spokenWord, spokenIndex) =>
-        !usedIndexes.has(spokenIndex) &&
-        spokenWord === currentWord
-    );
-
-    return foundIndex !== -1
-      ? "correct"
-      : "wrong";
-  };
-
-  // ============================================================
   // PROGRESSO
   // ============================================================
 
@@ -495,9 +591,7 @@ export default function CompletePsalmModal({
     return groups;
   }, {});
 
-  const orderedStanzas = Object.entries(
-    stanzas
-  ).sort(
+  const orderedStanzas = Object.entries(stanzas).sort(
     ([, versesA], [, versesB]) =>
       versesA[0].stanzaPosition -
       versesB[0].stanzaPosition
@@ -511,6 +605,7 @@ export default function CompletePsalmModal({
     <div className="fixed inset-0 z-[70]">
 
       {/* Overlay */}
+
       <button
         type="button"
         aria-label="Fechar"
@@ -519,17 +614,19 @@ export default function CompletePsalmModal({
       />
 
       {/* Modal */}
+
       <div className="relative z-10 mx-auto h-full max-w-3xl">
 
         <div className="relative mx-auto flex h-full max-w-2xl flex-col overflow-hidden bg-[#F2EDE4] shadow-2xl">
 
-          {/* ========================================================
+          {/* ====================================================
               HEADER
-              ======================================================== */}
+          ==================================================== */}
 
           <header className="relative shrink-0 border-b border-stone-300 bg-[#F2EDE4] px-6 pb-5 pt-8">
 
             {/* Fechar */}
+
             <button
               type="button"
               onClick={onClose}
@@ -540,13 +637,10 @@ export default function CompletePsalmModal({
             </button>
 
             {/* Visualizar */}
+
             <button
               type="button"
-              onClick={() =>
-                setIsVisible(
-                  (current) => !current
-                )
-              }
+              onClick={() => setIsVisible((current) => !current)}
               aria-label={
                 isVisible
                   ? "Ocultar Salmo"
@@ -558,18 +652,19 @@ export default function CompletePsalmModal({
             </button>
 
             {/* Título */}
+
             <div className="pr-24 text-left">
               <p className="font-domine text-sm font-bold uppercase tracking-wider text-stone-500">
                 Salmo {psalm.number}
               </p>
-
-              
             </div>
 
             {/* Progresso */}
+
             <div className="mx-auto mt-5 w-full max-w-md">
 
               <div className="mb-2 flex items-center justify-between">
+
                 <span className="text-xs font-semibold text-stone-500">
                   Progresso
                 </span>
@@ -577,6 +672,7 @@ export default function CompletePsalmModal({
                 <span className="font-domine text-sm font-bold text-stone-700">
                   {progress}%
                 </span>
+
               </div>
 
               <div
@@ -598,13 +694,14 @@ export default function CompletePsalmModal({
             </div>
           </header>
 
-          {/* ========================================================
+          {/* ====================================================
               CONTEÚDO
-              ======================================================== */}
+          ==================================================== */}
 
           <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-40 pt-6">
 
             {/* Loading */}
+
             {loading && (
               <div className="flex justify-center py-12">
                 <p className="text-sm text-stone-500">
@@ -614,6 +711,7 @@ export default function CompletePsalmModal({
             )}
 
             {/* Erro */}
+
             {!loading && error && (
               <div className="py-12 text-center">
                 <p className="text-sm text-red-600">
@@ -626,33 +724,37 @@ export default function CompletePsalmModal({
               <article className="font-domine text-[14px] leading-8 text-stone-800">
 
                 {/* ==================================================
-                    TÍTULO
-                    ================================================== */}
+                    TÍTULO DO SALMO
+                ================================================== */}
 
-                <div className="mb-8">
+                <div
+                  ref={currentIndex === 0 ? activeLineRef : null}
+                  onClick={() => {
+                    if (inputMode === "typing") {
+                      textareaRef.current?.focus();
+                    }
+                  }}
+                  className={`mb-8 rounded-xl transition-all duration-300 ${
+                    currentIndex === 0 && !isVisible
+                      ? "border-2 border-[#D6C5A8] bg-[#FFF8EC] px-4 py-3 shadow-sm"
+                      : ""
+                  }`}
+                >
 
-                  <div className="mb-2 flex items-start gap-3">
+                  <div className="flex items-start gap-3">
 
                     <div className="flex-1">
-                      {isVisible ||
-                      currentIndex > 0 ? (
+
+                      {isVisible || currentIndex > 0 ? (
                         <p className="font-bold">
                           {psalm.label}
                         </p>
                       ) : (
                         <div className="flex flex-wrap gap-x-2 gap-y-2">
-                          {psalm.label
-                            .split(/\s+/)
-                            .map(
-                              (_, index) => (
-                                <span
-                                  key={index}
-                                  className="inline-block h-[10px] w-10 border-b-2 border-dashed border-stone-400"
-                                />
-                              )
-                            )}
+                          {renderActiveWords(psalm.label)}
                         </div>
                       )}
+
                     </div>
 
                     {currentIndex > 0 && (
@@ -667,7 +769,7 @@ export default function CompletePsalmModal({
 
                 {/* ==================================================
                     ESTROFES
-                    ================================================== */}
+                ================================================== */}
 
                 {orderedStanzas.map(
                   ([stanzaId, stanzaVerses]) => (
@@ -678,109 +780,65 @@ export default function CompletePsalmModal({
 
                       {stanzaVerses
                         .sort(
-                          (a, b) =>
-                            a.position -
-                            b.position
+                          (a, b) => a.position - b.position
                         )
                         .map((verse) => {
 
-                          const lineIndex =
-                            lines.findIndex(
-                              (line) =>
-                                line.id ===
-                                String(
-                                  verse.id
-                                )
-                            );
+                          const lineIndex = lines.findIndex(
+                            (line) =>
+                              line.id === String(verse.id)
+                          );
 
                           const isCompleted =
-                            lineIndex <
-                            currentIndex;
+                            lineIndex < currentIndex;
 
                           const isCurrent =
-                            lineIndex ===
-                            currentIndex;
+                            lineIndex === currentIndex;
 
                           const isFuture =
-                            lineIndex >
-                            currentIndex;
+                            lineIndex > currentIndex;
 
                           return (
                             <div
                               key={verse.id}
-                              className="mb-3 last:mb-0"
+                              ref={isCurrent ? activeLineRef : null}
+                              onClick={() => {
+                                if (
+                                  isCurrent &&
+                                  inputMode === "typing"
+                                ) {
+                                  textareaRef.current?.focus();
+                                }
+                              }}
+                              className={`mb-3 last:mb-0 rounded-xl transition-all duration-300 ${
+                                isCurrent && !isVisible
+                                  ? "border-2 border-[#D6C5A8] bg-[#FFF8EC] px-4 py-3 shadow-sm"
+                                  : ""
+                              }`}
                             >
 
                               <div className="flex items-start gap-3">
 
-                                <div className="flex-1">
+                                <div className="min-w-0 flex-1">
 
-                                  {isVisible ||
-                                  isCompleted ? (
+                                  {isVisible || isCompleted ? (
                                     <p>
                                       {verse.text}
                                     </p>
                                   ) : isCurrent ? (
-                                    <p className="flex flex-wrap gap-x-2 gap-y-2">
-
-                                      {verse.text
-                                        .split(
-                                          /\s+/
-                                        )
-                                        .map(
-                                          (
-                                            word,
-                                            index
-                                          ) => {
-
-                                            const state =
-                                              getWordState(
-                                                word,
-                                                index
-                                              );
-
-                                            return (
-                                              <span
-                                                key={`${verse.id}-${index}`}
-                                                className={
-                                                  state ===
-                                                  "correct"
-                                                    ? "font-bold text-stone-800"
-                                                    : state ===
-                                                      "wrong"
-                                                    ? "font-bold text-red-600 line-through"
-                                                    : "inline-block h-[10px] w-10 border-b-2 border-dashed border-stone-400"
-                                                }
-                                              >
-                                                {state ===
-                                                "hidden"
-                                                  ? ""
-                                                  : word}
-                                              </span>
-                                            );
-                                          }
-                                        )}
-
-                                    </p>
+                                    <div className="flex flex-wrap gap-x-2 gap-y-2">
+                                      {renderActiveWords(verse.text)}
+                                    </div>
                                   ) : isFuture ? (
                                     <div className="flex flex-wrap gap-x-2 gap-y-2">
-
                                       {verse.text
-                                        .split(
-                                          /\s+/
-                                        )
-                                        .map(
-                                          (
-                                            _,
-                                            index
-                                          ) => (
-                                            <span
-                                              key={`${verse.id}-${index}`}
-                                              className="inline-block h-[10px] w-10 border-b-2 border-dashed border-stone-400"
-                                            />
-                                          )
-                                        )}
-
+                                        .split(/\s+/)
+                                        .map((_, index) => (
+                                          <span
+                                            key={`${verse.id}-${index}`}
+                                            className="inline-block h-[10px] min-w-10 border-b-2 border-dashed border-stone-400"
+                                          />
+                                        ))}
                                     </div>
                                   ) : null}
 
@@ -793,6 +851,7 @@ export default function CompletePsalmModal({
                                 )}
 
                                 {isCurrent &&
+                                  inputMode === "speaking" &&
                                   transcript &&
                                   !isRecording && (
                                     <span className="mt-1 text-lg font-bold text-red-600">
@@ -815,106 +874,123 @@ export default function CompletePsalmModal({
 
           </div>
 
-          {/* ========================================================
+          {/* ====================================================
               CONTROLES
-              ======================================================== */}
+          ==================================================== */}
 
           {!loading &&
             !error &&
             !isVisible &&
             currentLine && (
+
               <div className="absolute bottom-0 left-0 right-0 border-t border-stone-300 bg-[#F2EDE4] px-6 pb-8 pt-4">
 
-               {inputMode === "speaking" ? (
-                <>  
-                {!isRecording ? (
-                  <button
-                    type="button"
-                    onClick={toggleRecording}
-                    className="w-full rounded-2xl border-2 border-b-4 border-gray-200 bg-white py-4 text-lg font-bold tracking-wider text-[#00A2E8] shadow-md transition-transform active:translate-y-1 active:border-b-2"
-                  >
-                    <span className="mr-2">
-                      🎙️
-                    </span>
+                {inputMode === "speaking" ? (
+                  <>
 
-                    Falar
-                  </button>
+                    {!isRecording ? (
+
+                      <button
+                        type="button"
+                        onClick={toggleRecording}
+                        className="w-full rounded-2xl border-2 border-b-4 border-gray-200 bg-white py-4 text-lg font-bold tracking-wider text-[#00A2E8] shadow-md transition-transform active:translate-y-1 active:border-b-2"
+                      >
+                        <span className="mr-2">
+                          🎙️
+                        </span>
+
+                        Falar
+                      </button>
+
+                    ) : (
+
+                      <button
+                        type="button"
+                        onClick={toggleRecording}
+                        className="flex min-h-16 w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-gray-200 bg-white py-4 shadow-md animate-pulse"
+                      >
+                        <div className="h-6 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
+                        <div className="h-10 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
+                        <div className="h-14 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
+                        <div className="h-8 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
+                        <div className="h-12 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
+                        <div className="h-5 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
+                      </button>
+
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        continueRecordingRef.current = false;
+
+                        if (recognitionRef.current) {
+                          try {
+                            recognitionRef.current.stop();
+                          } catch {}
+                        }
+
+                        setIsRecording(false);
+                        setTranscript("");
+                        setInputMode("typing");
+                      }}
+                      className="mt-3 w-full text-sm font-bold tracking-wide text-gray-500"
+                    >
+                      Digitar
+                    </button>
+
+                  </>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={toggleRecording}
-                    className="flex min-h-16 w-full items-center justify-center gap-1.5 rounded-2xl border-2 border-gray-200 bg-white py-4 shadow-md animate-pulse"
-                  >
-                    <div className="h-6 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
-                    <div className="h-10 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
-                    <div className="h-14 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
-                    <div className="h-8 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
-                    <div className="h-12 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
-                    <div className="h-5 w-1.5 animate-bounce rounded-full bg-[#00A2E8]" />
-                  </button>
+                  <>
+
+                    {/* Campo invisível que recebe a digitação */}
+
+                    <textarea
+                      ref={textareaRef}
+                      value={typedAnswer}
+                      onChange={(event) =>
+                        setTypedAnswer(event.target.value)
+                      }
+                      onKeyDown={(event) => {
+                        if (
+                          event.key === "Enter" &&
+                          !event.shiftKey
+                        ) {
+                          event.preventDefault();
+
+                          if (typedAnswer.trim()) {
+                            verifyTypedAnswer();
+                          }
+                        }
+                      }}
+                      aria-label="Digite o texto do Salmo"
+                      className="fixed bottom-0 left-0 h-px w-px resize-none opacity-0"
+                      autoComplete="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTypedAnswer("");
+                        setInputMode("speaking");
+                        textareaRef.current?.blur();
+                      }}
+                      className="w-full text-sm font-bold tracking-wide text-gray-500"
+                    >
+                      Quero falar
+                    </button>
+
+                  </>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    continueRecordingRef.current = false;
-
-                    if (recognitionRef.current) {
-                      try {
-                        recognitionRef.current.stop();
-                      } catch {}
-                    }
-                    
-                    setIsRecording(false);
-                    setTranscript("");
-                    setInputMode("typing");
-                  }}
-                  className="mt-3 w-full text-sm font-bold tracking-wide text-gray-500"
-                >
-                  Digitar
-                </button>
-                </>
-               ) : (
-                <>
-                    <div className="rounded-2xl border-2 border-gray-200 bg-white p-3 shadow-md">
-      <textarea
-        value={typedAnswer}
-        onChange={(event) =>
-          setTypedAnswer(event.target.value)
-        }
-        placeholder="Digite o verso aqui..."
-        className="min-h-24 w-full resize-none bg-transparent font-domine text-sm leading-7 text-stone-800 outline-none placeholder:text-stone-400"
-        autoFocus
-      />
-
-      <button
-        type="button"
-        onClick={verifyTypedAnswer}
-        disabled={!typedAnswer.trim()}
-        className="mt-2 w-full rounded-xl bg-[#2D4D42] py-3 text-sm font-bold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        Verificar
-      </button>
-    </div>
-
-    <button
-      type="button"
-      onClick={() => {
-        setTypedAnswer("");
-        setInputMode("speaking");
-      }}
-      className="mt-3 w-full text-sm font-bold tracking-wide text-gray-500"
-    >
-      Quero falar
-    </button>
-  </>
-)}
               </div>
             )}
 
-          {/* ========================================================
+          {/* ====================================================
               SUCCESS
-              ======================================================== */}
+          ==================================================== */}
 
           <SuccessModal
             visible={showSuccess}
@@ -926,9 +1002,9 @@ export default function CompletePsalmModal({
             buttonLabel="Continuar"
           />
 
-          {/* ========================================================
+          {/* ====================================================
               FAILURE
-              ======================================================== */}
+          ==================================================== */}
 
           <FailureModal
             visible={showFailure}
@@ -937,10 +1013,7 @@ export default function CompletePsalmModal({
               setTranscript("");
               setTypedAnswer("");
               setIsRecording(false);
-              continueRecordingRef.current = false;
 
-              // Depois de um erro, o microfone NÃO
-              // volta automaticamente.
               continueRecordingRef.current = false;
             }}
           />
@@ -950,4 +1023,3 @@ export default function CompletePsalmModal({
     </div>
   );
 }
-

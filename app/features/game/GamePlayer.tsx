@@ -4,14 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { getUserProgress } from "@/lib/supabase/game/getUserProgress";
-import {
-  getCurrentTask,
-  type CurrentTask,
-} from "@/lib/supabase/game/getCurrentTask";
-import { getNextTask } from "@/lib/supabase/game/getNextTask";
+import { getCurrentTask } from "@/lib/supabase/game/getCurrentTask";
 
 import TaskRender from "./TaskRender";
-import { completeTask } from "@/lib/supabase/game/completeTask";
+import { completeTask } from "@/app/actions/completeTask";
+import type { Task } from "@/lib/types/task";
 
 import TaskLoading from "./components/loading/TaskLoading";
 
@@ -28,14 +25,6 @@ type UserProgress = {
   completed: boolean;
 };
 
-type PrefetchedTask = {
-  data: {
-    id: number;
-    stanza_id: number;
-  } | null;
-  task: CurrentTask | null;
-};
-
 export default function GamePlayer({
   psalmNumber,
 }: GamePlayerProps) {
@@ -45,16 +34,15 @@ export default function GamePlayer({
     useState<UserProgress | null>(null);
 
   const [task, setTask] =
-    useState<CurrentTask | null>(null);
-
-  const nextTaskPromiseRef =
-    useRef<Promise<PrefetchedTask> | null>(null);
+    useState<Task | null>(null);
 
   // Início da sessão do Salmo
-  const sessionStartTimeRef = useRef<number>(Date.now());
+  const sessionStartTimeRef = useRef<number>(0);
 
   useEffect(() => {
     async function load() {
+      sessionStartTimeRef.current = Date.now();
+
       const progress = await getUserProgress(psalmNumber);
 
       setProgress(progress);
@@ -68,36 +56,6 @@ export default function GamePlayer({
 
     load();
   }, [psalmNumber]);
-
-  // Prefetch da próxima task
-  useEffect(() => {
-    if (!task) return;
-
-    nextTaskPromiseRef.current = (async () => {
-      const data = await getNextTask(
-        task.psalm_id,
-        task.global_order
-      );
-
-      if (!data) {
-        return {
-          data: null,
-          task: null,
-        };
-      }
-
-      const nextTask = await getCurrentTask(data.id);
-
-      return {
-        data,
-        task: nextTask,
-      };
-    })();
-
-    return () => {
-      nextTaskPromiseRef.current = null;
-    };
-  }, [task]);
 
   // Calcula o tempo total desde o início do Salmo
   function getSessionTime(): string {
@@ -120,28 +78,21 @@ export default function GamePlayer({
   async function handleTaskCompleted() {
     if (!progress || !task) return;
 
-    const prefetched =
-      await nextTaskPromiseRef.current;
-
-    const result = await completeTask(
-      progress.id,
-      task.id,
-      progress.user_id,
-      prefetched?.data ?? null
-    );
+    const result = await completeTask({
+      progressId: progress.id,
+      currentTaskId: task.id,
+    });
 
     if (result.completed) {
       router.push("/home");
       return;
     }
 
-    const nextTask = prefetched?.task;
+    const nextTask = await getCurrentTask(result.nextTaskId!);
 
     if (!nextTask) {
       throw new Error("Próxima task não encontrada.");
     }
-
-    nextTaskPromiseRef.current = null;
 
     setTask(nextTask);
 

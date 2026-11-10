@@ -13,6 +13,14 @@ const mockTask: Task = {
 
   recap: true,
 
+  psalm_id: 28,
+  stanza_id: 1,
+  battery_cost: 0,
+  star_reward: 10,
+  xp_reward: 10,
+
+  verses: null,
+
   recap_verses: [
     {
       id: 166,
@@ -51,15 +59,9 @@ const mockTask: Task = {
 
   stanza_total_tasks: 3,
 
-  // battery_cost: 5,
-  star_reward: 10,
-
-  // battery: 100,
-  // max_battery: 100,
-
-  psalm_id: 28,
-
-  verses: null,
+  stanza_position: 1,
+  psalm_number: 28,
+  psalm_stanzas: 3,
 };
 
 export default function RecapDevPage() {

@@ -23,17 +23,6 @@ export async function getUserProgress(psalmNumber: number) {
 
 const psalmId = psalm.id;
 
-// Bateria desativada temporariamente durante a fase de testes.
-// const { data: userStats, error: statsError } = await supabase
-//   .from("user_stats")
-//   .select("battery, max_battery")
-//   .eq("id", user.id)
-//   .single();
-//
-// if (statsError) {
-//   throw statsError;
-// }
-
   // Verifica se já existe progresso
   const { data: progress } = await supabase
     .from("user_progress")

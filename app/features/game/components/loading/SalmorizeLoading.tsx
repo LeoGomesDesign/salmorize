@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 
 type SalmorizeLoadingProps = {
   variant?: "splash" | "loading";
+  message?: string;
 };
 
 export default function SalmorizeLoading({
   variant = "loading",
-  }: SalmorizeLoadingProps) {
+  message,
+}: SalmorizeLoadingProps) {
   const [visible, setVisible] = useState(false);
   const [progress, setProgress] = useState(false);
   const [exiting, setExiting] = useState(false);
@@ -53,8 +55,13 @@ export default function SalmorizeLoading({
           priority
         />
 
+        {variant === "splash" && message && (
+          <p className="mt-5 max-w-xs px-6 text-center text-sm text-stone-800">
+            {message}
+          </p>
+        )}
+
         {variant === "loading" && (
-         
           <div className="mt-6 w-40 h-2 rounded-full overflow-hidden bg-black/10">
             <div
               className="h-full rounded-full"
@@ -66,8 +73,6 @@ export default function SalmorizeLoading({
               }}
             />
           </div>
-
-               
         )}
       </div>
     </main>

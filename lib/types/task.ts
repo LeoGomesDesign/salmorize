@@ -15,40 +15,53 @@ export interface GeneratedTask {
   recapVerses: number[];
 }
 
+export interface TaskVerse {
+  id: number;
+  text: string;
+  position: number;
+  audio_url: string | null;
+}
+
+export interface TaskStanzaVerse {
+  id: number;
+  text: string;
+  position: number;
+}
+
 export interface Task {
-  id: string | number;
+  id: number;
 
   type: TaskType;
 
   variant: string;
 
   task_order: number;
+
   global_order: number;
+
   recap: boolean;
+
   psalm_id: number;
 
-  verses: {
-    id: number;
-    text: string;
-    position: number;
-  } | null;
+  stanza_id: number;
 
-  recap_verses: {
-    id: number;
-    text: string;
-    position: number;
-  }[];
+  battery_cost: number;
 
-  psalm_verses: {
-    id: number;
-    text: string;
-    position: number;
-  }[];
-
-  
-  stanza_total_tasks: number;
-  // battery: number;
-  // max_battery: number;
-  // battery_cost: number;
   star_reward: number;
+
+  xp_reward: number;
+
+  verses: TaskVerse | null;
+
+  recap_verses: TaskStanzaVerse[];
+
+  psalm_verses: TaskStanzaVerse[];
+
+  stanza_total_tasks: number;
+
+  stanza_position: number;
+
+  psalm_number: number;
+
+  psalm_stanzas: number;
 }

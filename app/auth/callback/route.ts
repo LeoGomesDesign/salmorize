@@ -10,12 +10,12 @@ export async function GET(request: Request) {
   const errorDescription = searchParams.get("error_description");
 
   if (!code) {
-    const params = new URLSearchParams();
-    if (error) params.set("auth_error", error);
-    if (errorDescription) params.set("auth_error_description", errorDescription);
+    if (error) {
+      console.error("Google OAuth callback error:", error, errorDescription);
+    }
 
     return NextResponse.redirect(
-      new URL(`/onboarding?${params.toString()}`, redirectOrigin).toString()
+      new URL("/home?account=error", redirectOrigin).toString()
     );
   }
 
@@ -42,14 +42,10 @@ export async function GET(request: Request) {
 
   if (exchangeError || !data?.session) {
     console.error("Supabase OAuth exchange error:", exchangeError);
-    const params = new URLSearchParams();
-    params.set("auth_error", "exchange_failed");
-    if (exchangeError?.message) params.set("auth_error_description", exchangeError.message);
-
     return NextResponse.redirect(
-      new URL(`/onboarding?${params.toString()}`, redirectOrigin).toString()
+      new URL("/home?account=error", redirectOrigin).toString()
     );
   }
 
-  return NextResponse.redirect(new URL("/home", redirectOrigin).toString());
+  return NextResponse.redirect(new URL("/home?account=linked", redirectOrigin).toString());
 }

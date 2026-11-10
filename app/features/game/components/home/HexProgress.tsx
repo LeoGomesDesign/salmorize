@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 // ============================================================================
 // Propriedades
@@ -8,7 +9,7 @@ import { useMemo } from "react";
 
 type HexProgressProps = {
   size: number;
-  progress: number; // 0 → 100
+  progress: number;
 };
 
 // ============================================================================
@@ -19,21 +20,16 @@ export default function HexProgress({
   size,
   progress,
 }: HexProgressProps) {
-
-  // ==========================================================================
-  // Caminho do hexágono exportado do Figma
-  // ==========================================================================
+  const [pathLength, setPathLength] = useState(0);
 
   const path =
     "M2.95483 46.2148C1.9141 44.4122 1.9141 42.1913 2.95483 40.3887L23.3357 5.08789C24.3764 3.28529 26.3001 2.1748 28.3816 2.1748L69.1433 2.1748C71.2248 2.1748 73.1485 3.28529 74.1892 5.08789L94.5701 40.3887C95.6108 42.1913 95.6108 44.4122 94.5701 46.2148L74.1892 81.5156C73.1485 83.3182 71.2248 84.4287 69.1433 84.4287L28.3816 84.4287C26.3001 84.4287 24.3764 83.3182 23.3357 81.5156L2.95483 46.2148Z";
 
   // ==========================================================================
-  // Comprimento total do caminho
+  // Calcula o comprimento do caminho após a montagem
   // ==========================================================================
 
-  const pathLength = useMemo(() => {
-    if (typeof window === "undefined") return 0;
-
+  useEffect(() => {
     const svgPath = document.createElementNS(
       "http://www.w3.org/2000/svg",
       "path"
@@ -41,15 +37,20 @@ export default function HexProgress({
 
     svgPath.setAttribute("d", path);
 
-    return svgPath.getTotalLength();
-  }, []);
+    setPathLength(svgPath.getTotalLength());
+  }, [path]);
 
   // ==========================================================================
-  // Quanto do caminho ficará escondido
+  // Progresso
   // ==========================================================================
+
+  const normalizedProgress = Math.min(
+    100,
+    Math.max(0, progress)
+  );
 
   const dashOffset =
-    pathLength - (pathLength * progress) / 100;
+    pathLength - (pathLength * normalizedProgress) / 100;
 
   return (
     <svg
@@ -62,10 +63,7 @@ export default function HexProgress({
         overflow: "visible",
       }}
     >
-      {/* ==========================================================
-          Fundo cinza
-      ========================================================== */}
-
+      {/* Fundo cinza */}
       <path
         d={path}
         fill="none"
@@ -73,10 +71,7 @@ export default function HexProgress({
         strokeWidth="4.5"
       />
 
-      {/* ==========================================================
-          Progresso
-      ========================================================== */}
-
+      {/* Progresso verde */}
       <path
         d={path}
         fill="none"

@@ -1,12 +1,5 @@
-'use client';
-
-import { OnboardingProvider } from '../context/OnboardingContext';
-import OnboardingFlow from '../features/onboarding/OnboardingFlow';
+import { redirect } from "next/navigation";
 
 export default function OnboardingPage() {
-  return (
-    <OnboardingProvider>
-      <OnboardingFlow />
-    </OnboardingProvider>
-  );
+  redirect("/");
 }

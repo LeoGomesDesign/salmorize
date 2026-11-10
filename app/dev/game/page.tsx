@@ -2,15 +2,26 @@
 
 import { useState } from "react";
 
+import { createClient } from "@/lib/supabase/client";
 import { getUserProgress } from "@/lib/supabase/game/getUserProgress";
 import { getCurrentTask } from "@/lib/supabase/game/getCurrentTask";
 import { getNextTask } from "@/lib/supabase/game/getNextTask";
-import { completeTask } from "@/lib/supabase/game/completeTask";
+import { completeTask } from "@/app/actions/completeTask";
+import type { Task } from "@/lib/types/task";
+
+type DevProgress = {
+  id: number;
+  user_id: string;
+  current_task_id: number;
+  stars: number;
+  xp: number;
+  completed: boolean;
+};
 
 export default function GameDevPage() {
   const [loading, setLoading] = useState(false);
-  const [progress, setProgress] = useState<any>(null);
-  const [task, setTask] = useState<any>(null);
+  const [progress, setProgress] = useState<DevProgress | null>(null);
+  const [task, setTask] = useState<Task | null>(null);
   const [progressId, setProgressId] = useState<number | null>(null);
 
   async function loadGame() {
@@ -28,6 +39,7 @@ export default function GameDevPage() {
       );
 
       const nextTask = await getNextTask(
+        createClient(),
         taskData.psalm_id,
         taskData.global_order
       );
@@ -36,12 +48,10 @@ export default function GameDevPage() {
 
       setTask(taskData);
 
-      const result = await completeTask(
-        progressData.id,
-        progressData.current_task_id,
-        progressData.user_id,
-        nextTask
-        );
+      const result = await completeTask({
+        progressId: progressData.id,
+        currentTaskId: progressData.current_task_id,
+      });
 
         console.log(result);
 
@@ -54,17 +64,10 @@ export default function GameDevPage() {
 
   async function handleCompleteTask() {
     if (!progressId || !task || !progress) return;
-     const nextTask = await getNextTask(
-        task.psalm_id,
-        task.global_order
-      );
-
-    await completeTask(
-    progressId,
-    task.id,
-    progress.user_id,
-    nextTask
-    );
+     await completeTask({
+      progressId,
+      currentTaskId: task.id,
+    });
 
     const updatedProgress = await getUserProgress(1);
 

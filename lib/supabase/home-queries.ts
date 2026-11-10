@@ -55,17 +55,6 @@ export async function fetchHomeData(
 
 const profileRow = await ensureProfile(supabase, user.id, fallbackName);
 
-// Bateria desativada temporariamente durante a fase de testes.
-// const { data: userStats, error: userStatsError } = await supabase
-//   .from("user_stats")
-//   .select("battery")
-//   .eq("id", user.id)
-//   .single();
-//
-// if (userStatsError) {
-//   throw userStatsError;
-// }
-
   const [psalmsResult, progressResult] = await Promise.all([
     supabase
     .from("psalms")

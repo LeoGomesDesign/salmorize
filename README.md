@@ -29,6 +29,14 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Visitor access and optional Google account
+
+Visitors start with an anonymous Supabase session and can link a Google account later from the home screen. Linking keeps the progress attached to the same Supabase user.
+
+For a hosted Supabase project, enable anonymous sign-ins and manual identity linking in the project's Auth settings, configure the Google provider, and allow the `/auth/callback` URL in the redirect URL list. The local equivalents are enabled in `supabase/config.toml`.
+
+Until Google is linked, progress belongs to the anonymous browser session. Clearing the browser's site data before linking can make that progress inaccessible.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

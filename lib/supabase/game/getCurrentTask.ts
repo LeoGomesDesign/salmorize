@@ -1,48 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
-import type { TaskType } from "@/lib/types/task";
-
-export interface CurrentTask {
-  id: number;
-  type: TaskType;
-  variant: string;
-  task_order: number;
-  global_order: number;
-  recap: boolean;
-
-  recap_verses: {
-    id: number;
-    text: string;
-    position: number;
-  }[];
-
-  psalm_verses: {
-    id: number;
-    text: string;
-    position: number;
-  }[];
-
-  battery_cost: number;
-  star_reward: number;
-  xp_reward: number;
-
-  verses: {
-    id: number;
-    text: string;
-    position: number;
-    audio_url: string | null;
-  } | null;
-
-  stanza_id: number;
-  stanza_position: number;
-  psalm_id: number;
-  psalm_number: number;
-  psalm_stanzas: number;
-  stanza_total_tasks: number;
-}
+import type { Task } from "@/lib/types/task";
 
 export async function getCurrentTask(
   taskId: number
-): Promise<CurrentTask> {
+): Promise<Task> {
   const supabase = createClient();
 
   // Busca a task atual
@@ -118,7 +79,7 @@ export async function getCurrentTask(
   }
 
   // Versos usados pelo Recap
-  let recapVerses: CurrentTask["recap_verses"] = [];
+  let recapVerses: Task["recap_verses"] = [];
 
   if (data.recap_verses?.length) {
     const { data: verses, error: recapError } = await supabase
@@ -139,7 +100,7 @@ export async function getCurrentTask(
   }
 
   // Todos os versos do Salmo só são necessários pelo Recap
-  let psalmVerses: CurrentTask["psalm_verses"] = [];
+  let psalmVerses: Task["psalm_verses"] = [];
 
   if (data.type === "recap") {
     const { data: stanzas, error: stanzasError } = await supabase

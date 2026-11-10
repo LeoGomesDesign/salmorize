@@ -1,0 +1,446 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
+import { useRouter } from "next/navigation";
+
+import PsalmModal from "@/app/features/game/modals/PsalmModal";
+import CompletePsalmModal from "@/app/features/game/modals/CompletePsalmModal";
+import PsalmTextModal from "@/app/features/game/modals/PsalmTextModal";
+import PsalmStep from "@/app/features/game/components/home/PsalmStep";
+import { createClient } from "@/lib/supabase/client";
+import type { HomeData } from "@/lib/types/home";
+
+type HomeScreenProps = {
+  initialData: HomeData;
+  isAnonymous: boolean;
+  accountStatus?: "linked" | "error";
+};
+
+const STEP_HEIGHT = 120;
+
+const ACTIVE_STEP_SIZE = 90;
+const STEP_RING_PADDING = 16;
+
+const AREA_WIDTH = 300;
+
+const PADDING_TOP = 72;
+const PADDING_BOT = 40;
+
+const X_RIGHT = AREA_WIDTH * 0.84;
+const X_LEFT = AREA_WIDTH * 0.16;
+
+const getX = (index: number) =>
+  index % 2 === 0 ? X_RIGHT : X_LEFT;
+
+// ─── Tela principal ─────────────────────────────────────────────────────────
+export default function HomeScreen({
+  initialData,
+  isAnonymous,
+  accountStatus,
+}: HomeScreenProps) {
+  const router = useRouter();
+  const { profile, psalms } = initialData;
+  const [isLinkingGoogle, setIsLinkingGoogle] = useState(false);
+  const [accountMessage, setAccountMessage] = useState<string | null>(() => {
+    if (accountStatus === "linked") {
+      return "Conta Google conectada. Seu progresso está salvo na sua conta.";
+    }
+
+    if (accountStatus === "error") {
+      return "Não foi possível conectar ao Google. Tente novamente.";
+    }
+
+    return null;
+  });
+
+  const [selectedPsalm, setSelectedPsalm] =
+    useState<HomeData["psalms"][number] | null>(null);
+
+  const [isPsalmTextOpen, setIsPsalmTextOpen] = useState(false);
+
+  const [viewingPsalm, setViewingPsalm] =
+    useState<HomeData["psalms"][number] | null>(null);
+  const [isCompletePsalmOpen, setIsCompletePsalmOpen] = useState(false);
+
+  const [completePsalm, setCompletePsalm] =
+    useState<HomeData["psalms"][number] | null>(null);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const activePsalm = psalms.find((p) => p.status === "active") ?? psalms[0];
+
+  useEffect(() => {
+    if (accountStatus) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [accountStatus]);
+
+  const handleGoogleLink = async () => {
+    setIsLinkingGoogle(true);
+    setAccountMessage(null);
+
+    try {
+      const supabase = createClient();
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+
+      if (userError) {
+        throw userError;
+      }
+
+      if (!userData.user?.is_anonymous) {
+        throw new Error("A sessão atual não é anônima.");
+      }
+
+      const { error } = await supabase.auth.linkIdentity({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
+      console.error("Falha ao vincular conta Google:", error);
+      setAccountMessage("Não foi possível conectar ao Google. Tente novamente.");
+      setIsLinkingGoogle(false);
+    }
+  };
+
+  const handleOpenPsalmTooltip = (
+    psalm: HomeData["psalms"][number],
+  ) => {
+    setSelectedPsalm(psalm);
+  };
+
+  const handleContinue = (
+    psalm: HomeData["psalms"][number],
+  ) => {
+    router.push(`/lesson/${psalm.number}`);
+  };
+
+  const handleCompletePsalm = (
+    psalm: HomeData["psalms"][number],
+  ) => {
+    setSelectedPsalm(null);
+    setCompletePsalm(psalm);
+    setIsCompletePsalmOpen(true);
+  };
+
+  const handleViewPsalm = (
+    psalm: HomeData["psalms"][number],
+  ) => {
+    // Fecha o modal inicial
+    setSelectedPsalm(null);
+    // Define o salmo que será exibido
+    setViewingPsalm(psalm);
+    // Abre o modal de texto do salmo
+    setIsPsalmTextOpen(true);
+  };
+
+  const handleClosePsalmText = () => {
+    setIsPsalmTextOpen(false);
+    setViewingPsalm(null);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedPsalm(null);
+  };
+
+  const psalmCount = psalms.length;
+  const scrollActiveIndex = psalms.findIndex((p) => p.status === "active");
+
+  useEffect(() => {
+    if (
+      psalmCount === 0 ||
+      scrollActiveIndex < 0 ||
+      !scrollRef.current
+    ) {
+      return;
+    }
+
+    const container = scrollRef.current;
+
+    // Posição vertical do Salmo ativo dentro da escada
+    const activeTop =
+      PADDING_TOP +
+      (psalmCount - 1 - scrollActiveIndex) * STEP_HEIGHT;
+
+    // Centro do Salmo ativo
+    const activeCenter =
+      activeTop + ACTIVE_STEP_SIZE / 2;
+
+    // Centro da área visível
+    const viewportCenter =
+      container.clientHeight / 2;
+
+    // Scroll necessário para centralizar o Salmo ativo
+    const targetScroll =
+      activeCenter - viewportCenter;
+
+    // Evita valores negativos ou maiores que o limite do scroll
+    const maxScroll =
+      container.scrollHeight - container.clientHeight;
+
+    container.scrollTop = Math.max(
+      0,
+      Math.min(targetScroll, maxScroll)
+    );
+  }, [psalmCount, scrollActiveIndex]);
+
+  if (!profile || psalms.length === 0) {
+    return (
+      <main
+        className="h-screen flex flex-col items-center justify-center gap-4 px-6"
+        style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
+      >
+        <p className="text-stone-700 text-center">
+          Não foi possível carregar sua jornada.
+        </p>
+        <button
+          onClick={() => router.refresh()}
+          className="rounded-2xl px-6 py-3 font-bold text-stone-800 active:scale-95 transition-transform"
+          style={{ backgroundColor: "#E8A920" }}
+        >
+          Tentar novamente
+        </button>
+      </main>
+    );
+  }
+
+  const userName = profile.displayName;
+  const streak = profile.streak;
+  const gems = profile.gems;
+  // Altura total da área scrollável
+  const totalHeight = psalms.length * STEP_HEIGHT + PADDING_TOP + PADDING_BOT;
+
+  // Posição top de cada degrau (0 = último salmo no topo, índice 0 = Salmo 1 na base)
+  const getTop = (index: number) =>
+    PADDING_TOP + (psalms.length - 1 - index) * STEP_HEIGHT;
+  // Centro de cada degrau para a linha tracejada
+  const stepCenterX = (index: number) => getX(index);
+  const stepCenterY = (index: number) => getTop(index) + ACTIVE_STEP_SIZE / 2;
+
+  const renderDashedPath = () => {
+    const points = psalms.map((_, i) => ({
+      x: stepCenterX(i),
+      y: stepCenterY(i),
+    }));
+
+    // Monta um polyline passando por todos os centros
+    const d = points
+      .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+      .join(" ");
+
+    return (
+      <svg
+        width={AREA_WIDTH}
+        height={totalHeight}
+        viewBox={`0 0 ${AREA_WIDTH} ${totalHeight}`}
+        style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none", zIndex: 1 }}
+      >
+        <path
+          d={d}
+          fill="none"
+          stroke="#C8C4BE"
+          strokeWidth="4"
+          strokeDasharray="14 10"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    );
+  };
+
+  return (
+    <main
+      className="h-screen w-full flex flex-col select-none overflow-hidden scrollbar-hidden"
+      style={{ backgroundColor: "#F2EDE4", fontFamily: "var(--font-montserrat)" }}
+    >
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <header className="flex items-center justify-between px-5 pt-12 pb-4 shrink-0">
+        <div className="flex items-center gap-3">
+          <div
+            className="rounded-full overflow-hidden border-2 border-stone-300 shrink-0"
+            style={{ width: 52, height: 52, backgroundColor: "#E8E2D8" }}
+          >
+            <SheepAvatar />
+          </div>
+          <div className="flex flex-col leading-tight">
+            <span className="text-stone-500 text-sm font-medium">Olá, 👋</span>
+            <span className="text-stone-800 font-bold text-lg">{userName}</span>
+            {isAnonymous && (
+              <button
+                type="button"
+                onClick={handleGoogleLink}
+                disabled={isLinkingGoogle}
+                className="mt-1 text-left text-xs font-bold text-emerald-800 underline disabled:opacity-60"
+              >
+                {isLinkingGoogle ? "Conectando..." : "Salvar progresso com Google"}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-stone-700 text-base">{streak}</span>
+            <span className="text-lg">📅</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="font-bold text-stone-700 text-base">{gems}</span>
+            <span className="text-lg">💎</span>
+          </div>
+        </div>
+      </header>
+
+      {accountMessage && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mx-5 mb-2 rounded-xl bg-white/80 px-4 py-2 text-center text-sm text-stone-700"
+        >
+          {accountMessage}
+        </p>
+      )}
+
+      {/* ── Área scrollável da escada ────────────────────────────────────── */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto"
+        style={{
+          overscrollBehavior: "contain",
+          WebkitOverflowScrolling: "touch",
+          overflowY: selectedPsalm ? "hidden" : "auto",
+        } as CSSProperties}
+      >
+        {/* Container que centraliza a escada */}
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: totalHeight,
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          {/* Área da escada */}
+          <div
+            style={{
+              position: "relative",
+              width: AREA_WIDTH,
+              height: totalHeight,
+              flexShrink: 0,
+            }}
+          >
+            {renderDashedPath()}
+
+            {/* Degraus */}
+            {psalms.map((psalm, index) => {
+              const top = getTop(index);
+              const cx = getX(index);
+
+              // Usa o tamanho real do maior degrau
+              const ring = ACTIVE_STEP_SIZE + STEP_RING_PADDING;
+
+              return (
+                <div
+                  key={psalm.id}
+                  style={{
+                    position: "absolute",
+                    top,
+                    left: cx - ring / 2,
+                    zIndex: 10,
+                  }}
+                >
+                  <PsalmStep
+                    psalm={psalm}
+                    onOpenModal={handleOpenPsalmTooltip}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Barra CTA ───────────────────────────────────────────────────── */}
+      <div className="px-4 mb-16 pt-3 ">
+        <button
+        onClick={() => router.push(`/lesson/${activePsalm.number}`)}
+          className="w-full rounded-3xl px-6 py-5 flex items-center justify-between active:scale-95 transition-transform"
+          style={{ background: "linear-gradient(90deg, #538A78 0%, #1E4639 100%)", boxShadow: "0 8px 0 #0F3F2F" }}
+        >
+          <div className="flex flex-col items-start gap-2">
+            <span className="text-gray-2 font-medium font-domine text-xs text-left">
+              Salmo {activePsalm.number}
+            </span>
+            <span className="text-gray-2 font-regular text-m text-left">
+              {activePsalm.label}
+            </span>
+
+          {/*Progress bar*/}
+            <div
+              className="rounded-full overflow-hidden w-full"
+              style={{
+                height: 10,
+                backgroundColor: "rgba(255, 255, 255, 0.18)",
+              }}
+            >
+
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                 width: `${activePsalm.progress}%`,
+                 background: "linear-gradient(90deg, #279838 0%, #35DE4F 100%)",
+                 }}
+              />
+            </div>
+          </div>
+          <span className="text-gray-1 font-black text-4xl font-domine tabular-nums">
+            {activePsalm.progress}
+            <span className="text-2xl">%</span>
+          </span>
+        </button>
+      </div>
+
+      {/* ── Modal ──────────────────────────────────────────────────────── */}
+      <PsalmModal
+        psalm={selectedPsalm}
+        onClose={handleCloseModal}
+        onContinue={handleContinue}
+        onCompletePsalm={handleCompletePsalm}
+        onViewPsalm={handleViewPsalm}
+      />
+
+      {isCompletePsalmOpen && completePsalm && (
+        <CompletePsalmModal
+          psalm={completePsalm}
+          onClose={() => {
+            setIsCompletePsalmOpen(false);
+            setCompletePsalm(null);
+          }}
+        />
+      )}
+
+
+      {isPsalmTextOpen && viewingPsalm && (
+        <PsalmTextModal
+          psalm={viewingPsalm}
+          onClose={handleClosePsalmText}
+        />
+      )}
+
+    </main>
+  );
+}
+
+// ─── Avatar da ovelha ────────────────────────────────────────────────────────
+function SheepAvatar() {
+  return (
+    <img 
+    src="/img/ovelha_Recap.png"
+    alt="Avatar da ovelha" />
+  );
+}

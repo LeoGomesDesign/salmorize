@@ -1,11 +1,10 @@
-import { createClient } from "@/lib/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export async function getNextTask(
+  supabase: SupabaseClient,
   psalmId: number,
   globalOrder: number
 ) {
-  const supabase = createClient();
-
   const { data, error } = await supabase
     .from("tasks")
     .select(`
