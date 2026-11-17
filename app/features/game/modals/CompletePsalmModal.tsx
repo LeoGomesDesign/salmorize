@@ -51,6 +51,8 @@ export default function CompletePsalmModal({
   const recognitionRef = useRef<any>(null);
   const activeLineRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const caretRef = useRef<HTMLSpanElement>(null);
 
   const continueRecordingRef = useRef(false);
 
@@ -263,6 +265,34 @@ export default function CompletePsalmModal({
   }, [currentIndex, loading, currentLine]);
 
   // ============================================================
+  // MANTER O CURSOR VISÍVEL DURANTE A DIGITAÇÃO
+  // ============================================================
+
+  useEffect(() => {
+    if (inputMode !== "typing") return;
+
+    const container = scrollContainerRef.current;
+    const caret = caretRef.current;
+
+    if (!container || !caret) return;
+
+    const caretRect = caret.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    // Espaço ocupado pela barra inferior fixa + folga
+    const bottomInset = 140;
+    const topInset = 16;
+
+    if (caretRect.bottom > containerRect.bottom - bottomInset) {
+      container.scrollTop +=
+        caretRect.bottom - (containerRect.bottom - bottomInset);
+    } else if (caretRect.top < containerRect.top + topInset) {
+      container.scrollTop -=
+        containerRect.top + topInset - caretRect.top;
+    }
+  }, [typedAnswer, inputMode, currentIndex]);
+
+  // ============================================================
   // FOCO AUTOMÁTICO NA DIGITAÇÃO
   // ============================================================
 
@@ -273,7 +303,7 @@ export default function CompletePsalmModal({
       !showFailure &&
       !showSuccess
     ) {
-      textareaRef.current?.focus();
+      textareaRef.current?.focus({ preventScroll: true });
     }
   }, [
     currentIndex,
@@ -405,7 +435,10 @@ export default function CompletePsalmModal({
 
         {/* Cursor visual */}
         {inputMode === "typing" && (
-          <span className="inline-block h-5 border-l-2 border-[#2D4D42] animate-pulse" />
+          <span
+            ref={caretRef}
+            className="inline-block h-5 border-l-2 border-[#2D4D42] animate-pulse"
+          />
         )}
       </>
     );
@@ -601,6 +634,32 @@ export default function CompletePsalmModal({
   // RENDER
   // ============================================================
 
+  // Campo invisível sobre a linha ativa: recebe a digitação no
+  // lugar onde o texto aparece, sem empurrar a página nem o teclado.
+  const typingInput = (
+    <textarea
+      ref={textareaRef}
+      value={typedAnswer}
+      onChange={(event) =>
+        setTypedAnswer(event.target.value)
+      }
+      onKeyDown={(event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+
+          if (typedAnswer.trim()) {
+            verifyTypedAnswer();
+          }
+        }
+      }}
+      aria-label="Digite o texto do Salmo"
+      className="absolute inset-0 h-full w-full resize-none border-0 bg-transparent p-0 opacity-0 outline-none"
+      autoComplete="off"
+      autoCorrect="off"
+      spellCheck={false}
+    />
+  );
+
   return (
     <div className="fixed inset-0 z-[70]">
 
@@ -698,7 +757,10 @@ export default function CompletePsalmModal({
               CONTEÚDO
           ==================================================== */}
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-40 pt-6">
+          <div
+            ref={scrollContainerRef}
+            className="min-h-0 flex-1 overflow-y-auto px-6 pb-40 pt-6"
+          >
 
             {/* Loading */}
 
@@ -731,15 +793,20 @@ export default function CompletePsalmModal({
                   ref={currentIndex === 0 ? activeLineRef : null}
                   onClick={() => {
                     if (inputMode === "typing") {
-                      textareaRef.current?.focus();
+                      textareaRef.current?.focus({ preventScroll: true });
                     }
                   }}
-                  className={`mb-8 rounded-xl transition-all duration-300 ${
+                  className={`relative mb-8 rounded-xl transition-all duration-300 ${
                     currentIndex === 0 && !isVisible
                       ? "border-2 border-[#D6C5A8] bg-[#FFF8EC] px-4 py-3 shadow-sm"
                       : ""
                   }`}
                 >
+
+                  {currentIndex === 0 &&
+                    inputMode === "typing" &&
+                    !isVisible &&
+                    typingInput}
 
                   <div className="flex items-start gap-3">
 
@@ -807,15 +874,20 @@ export default function CompletePsalmModal({
                                   isCurrent &&
                                   inputMode === "typing"
                                 ) {
-                                  textareaRef.current?.focus();
+                                  textareaRef.current?.focus({ preventScroll: true });
                                 }
                               }}
-                              className={`mb-3 last:mb-0 rounded-xl transition-all duration-300 ${
+                              className={`relative mb-3 last:mb-0 rounded-xl transition-all duration-300 ${
                                 isCurrent && !isVisible
                                   ? "border-2 border-[#D6C5A8] bg-[#FFF8EC] px-4 py-3 shadow-sm"
                                   : ""
                               }`}
                             >
+
+                              {isCurrent &&
+                                inputMode === "typing" &&
+                                !isVisible &&
+                                typingInput}
 
                               <div className="flex items-start gap-3">
 
@@ -942,33 +1014,6 @@ export default function CompletePsalmModal({
                   </>
                 ) : (
                   <>
-
-                    {/* Campo invisível que recebe a digitação */}
-
-                    <textarea
-                      ref={textareaRef}
-                      value={typedAnswer}
-                      onChange={(event) =>
-                        setTypedAnswer(event.target.value)
-                      }
-                      onKeyDown={(event) => {
-                        if (
-                          event.key === "Enter" &&
-                          !event.shiftKey
-                        ) {
-                          event.preventDefault();
-
-                          if (typedAnswer.trim()) {
-                            verifyTypedAnswer();
-                          }
-                        }
-                      }}
-                      aria-label="Digite o texto do Salmo"
-                      className="fixed bottom-0 left-0 h-px w-px resize-none opacity-0"
-                      autoComplete="off"
-                      autoCorrect="off"
-                      spellCheck={false}
-                    />
 
                     <button
                       type="button"
